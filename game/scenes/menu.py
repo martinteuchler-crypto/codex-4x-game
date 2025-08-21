@@ -13,6 +13,8 @@ class Menu:
         self.seed = 0
         w, h = self.size
         screen_size = (w * config.TILE_SIZE, h * config.TILE_SIZE + config.UI_BAR_H)
+        # pygame_gui requires a display surface before constructing UI elements
+        self.screen = pygame.display.set_mode(screen_size)
         self.manager = pygame_gui.UIManager(screen_size)
         y = h * config.TILE_SIZE
         self.new_btn = pygame_gui.elements.UIButton(
@@ -24,7 +26,6 @@ class Menu:
         self.screen_size = screen_size
 
     def run(self) -> None:
-        screen = pygame.display.set_mode(self.screen_size)
         clock = pygame.time.Clock()
         running = True
         while running:
@@ -39,11 +40,13 @@ class Menu:
                 ):
                     if event.ui_element == self.new_btn:
                         Gameplay(self.size, self.seed).run()
+                        # reset display after returning from gameplay
+                        self.screen = pygame.display.set_mode(self.screen_size)
                     elif event.ui_element == self.quit_btn:
                         running = False
             self.manager.update(time_delta)
-            screen.fill((0, 0, 0))
-            self.manager.draw_ui(screen)
+            self.screen.fill((0, 0, 0))
+            self.manager.draw_ui(self.screen)
             pygame.display.flip()
 
 

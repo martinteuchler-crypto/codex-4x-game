@@ -21,13 +21,14 @@ class Gameplay:
             w * config.TILE_SIZE,
             h * config.TILE_SIZE + config.UI_BAR_H,
         )
+        # ensure a display surface exists before creating UI elements
+        self.screen = pygame.display.set_mode(self.screen_size)
         self.manager = pygame_gui.UIManager(self.screen_size)
         self.hud = Hud(self.manager)
         self.input = InputHandler()
 
     def run(self) -> None:
         pygame.display.set_caption("4X Prototype")
-        screen = pygame.display.set_mode(self.screen_size)
         clock = pygame.time.Clock()
         running = True
         while running:
@@ -60,8 +61,8 @@ class Gameplay:
                     elif event.ui_element == self.hud.soldier_btn:
                         self._buy_unit("soldier")
             self.manager.update(time_delta)
-            renderer.draw(self.state, screen, self.state.current)
-            self.manager.draw_ui(screen)
+            renderer.draw(self.state, self.screen, self.state.current)
+            self.manager.draw_ui(self.screen)
             pygame.display.flip()
 
     def _buy_unit(self, kind: str) -> None:
