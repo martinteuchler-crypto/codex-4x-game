@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codex-4x-game"
+version = "0.1.0"
+description = "Space 4X prototype with research using pygame"
+authors = [{name = "OpenAI"}]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pygame>=2.5",
+    "pygame_gui>=0.6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "black"]
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88
