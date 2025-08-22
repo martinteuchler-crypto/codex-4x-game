@@ -36,6 +36,12 @@ class HUD:
             text="",
             manager=self.manager,
         )
+        self.hint = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(10, 50, 300, 20),
+            text="",
+            manager=self.manager,
+        )
+        self.hint.hide()
 
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
@@ -49,3 +55,10 @@ class HUD:
 
     def draw(self, surface: pygame.Surface) -> None:
         self.manager.draw_ui(surface)
+
+    def show_hint(self, text: str) -> None:
+        self.hint.set_text(text)
+        self.hint.show()
+
+    def hide_hint(self) -> None:
+        self.hint.hide()
