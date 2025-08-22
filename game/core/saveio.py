@@ -32,8 +32,9 @@ def state_to_dict(state: State) -> Dict[str, Any]:
                 "id": c.id,
                 "owner": c.owner,
                 "pos": list(c.pos),
-                "size": c.size,
-                "claimed": [list(coord) for coord in c.claimed],
+                "size": [list(s) for s in sorted(c.size)],
+                "claimed": [list(s) for s in sorted(c.claimed)],
+
             }
             for cid, c in state.cities.items()
         },
@@ -68,8 +69,8 @@ def dict_to_state(data: Dict[str, Any]) -> State:
             id=c["id"],
             owner=c["owner"],
             pos=tuple(c["pos"]),
-            size=c.get("size", 1),
-            claimed={tuple(coord) for coord in c.get("claimed", [c["pos"]])},
+            size={tuple(s) for s in c.get("size", [])},
+            claimed={tuple(s) for s in c.get("claimed", [])},
         )
         for cid, c in data["cities"].items()
     }
