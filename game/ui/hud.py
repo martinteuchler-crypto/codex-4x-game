@@ -55,7 +55,6 @@ class HUD:
         self.message.hide()
         self._message_timer: float | None = None
 
-
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
 
@@ -86,15 +85,8 @@ class HUD:
         self.message.set_text(text)
         self.message.show()
         self._message_timer = timeout
-        
-    def hide_hint(self) -> None:
-        self.hint.hide()
 
-    def set_hover_info(self, text: str) -> None:
-        """Display hover information about map elements."""
-        self.hover.set_text(text)
-        self.hover.show()
-
-    def clear_hover_info(self) -> None:
-        """Hide hover information."""
-        self.hover.hide()
+    def hide_message(self) -> None:
+        """Hide any active message immediately."""
+        self.message.hide()
+        self._message_timer = None
