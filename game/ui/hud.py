@@ -36,8 +36,14 @@ class HUD:
             text="",
             manager=self.manager,
         )
-        self.hint = pygame_gui.elements.UILabel(
+        self.hover = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(10, 50, 300, 20),
+            text="",
+            manager=self.manager,
+        )
+        self.hover.hide()
+        self.hint = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(320, 50, 300, 20),
             text="",
             manager=self.manager,
         )
@@ -63,3 +69,12 @@ class HUD:
 
     def hide_hint(self) -> None:
         self.hint.hide()
+
+    def set_hover_info(self, text: str) -> None:
+        """Display hover information about map elements."""
+        self.hover.set_text(text)
+        self.hover.show()
+
+    def clear_hover_info(self) -> None:
+        """Hide hover information."""
+        self.hover.hide()
