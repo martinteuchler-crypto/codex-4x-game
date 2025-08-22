@@ -41,7 +41,7 @@ class HUD:
             starting_option="Buy Unit",
             relative_rect=pygame.Rect(self.rect.x + 210, self.rect.y + 5, 150, 30),
             manager=self.manager,
-            anchors={"left": "left", "bottom": "bottom"},
+            anchors={"left": "left", "top": "top"},
         )
         # Expand upwards so the menu remains fully visible above the HUD
         self.buy_unit.expand_direction = "up"

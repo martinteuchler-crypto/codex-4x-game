@@ -1,7 +1,12 @@
 TILE_SIZE = 32
 UI_BAR_H = 64
 MOVE_COST = {"plains": 1, "forest": 2, "hill": 2, "water": 999}
-YIELD = {"plains": (1, 1), "forest": (0, 2), "hill": (0, 2), "water": (0, 0)}
+YIELD = {
+    "plains": (1, 1),
+    "forest": (0, 2),
+    "hill": (0, 2),
+    "water": (1, 0),
+}
 UNIT_STATS = {
     "scout": {"moves": 3, "food": 0, "prod": 3},
     "soldier": {"moves": 2, "food": 0, "prod": 4},

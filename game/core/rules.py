@@ -42,33 +42,10 @@ def grow_city(state: State, city: City, rng: Random) -> bool:
     cost = 2**city.size
     if player.food < cost:
         return False
-    # Determine all unclaimed tiles.
-    claimed_tiles = {coord for c in state.cities.values() for coord in c.claimed}
-    unclaimed = [
-        (x, y)
-        for x in range(state.width)
-        for y in range(state.height)
-        if (x, y) not in claimed_tiles
-    ]
-    if not unclaimed:
-        return False
 
     player.food -= cost
     city.size += 1
-
-    # Find nearest candidates.
-    min_dist = min(distance(city.pos, c) for c in unclaimed)
-    nearest = [c for c in unclaimed if distance(city.pos, c) == min_dist]
-
-    def neighbour_count(coord: Coord) -> int:
-        x, y = coord
-        neighbours = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
-        return sum(1 for n in neighbours if n in city.claimed)
-
-    max_neigh = max(neighbour_count(c) for c in nearest)
-    candidates = [c for c in nearest if neighbour_count(c) == max_neigh]
-    chosen = rng.choice(sorted(candidates))
-    city.claimed.add(chosen)
+    claim_best_tile(state, city, rng)
     return True
 
 
@@ -95,19 +72,28 @@ def move_unit(state: State, unit_id: int, dest: Coord) -> None:
         city.owner = unit.owner
 
 
-def claim_adjacent(state: State, city: City, rng: Random) -> None:
-    x, y = city.pos
-    candidates: list[Coord] = []
-    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-        coord = (x + dx, y + dy)
-        if not in_bounds(state, coord):
-            continue
-        tile = state.tile_at(coord)
-        if tile.kind == "water" or coord in city.claimed:
-            continue
-        candidates.append(coord)
-    if candidates:
-        city.claimed.add(rng.choice(candidates))
+def claim_best_tile(state: State, city: City, rng: Random) -> None:
+    claimed_tiles = {coord for c in state.cities.values() for coord in c.claimed}
+    unclaimed = [
+        (x, y)
+        for x in range(state.width)
+        for y in range(state.height)
+        if (x, y) not in claimed_tiles
+    ]
+    if not unclaimed:
+        return
+
+    min_dist = min(distance(city.pos, c) for c in unclaimed)
+    nearest = [c for c in unclaimed if distance(city.pos, c) == min_dist]
+
+    def neighbour_count(coord: Coord) -> int:
+        x, y = coord
+        neighbours = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+        return sum(1 for n in neighbours if n in city.claimed)
+
+    max_neigh = max(neighbour_count(c) for c in nearest)
+    candidates = [c for c in nearest if neighbour_count(c) == max_neigh]
+    city.claimed.add(rng.choice(sorted(candidates)))
 
 
 def end_turn(state: State, rng: Random | None = None) -> None:
@@ -128,7 +114,7 @@ def end_turn(state: State, rng: Random | None = None) -> None:
         while city.food_stock >= 3:
             city.food_stock -= 3
             city.size += 1
-            claim_adjacent(state, city, rng)
+            claim_best_tile(state, city, rng)
 
     state.current_player = 1 - state.current_player
     state.turn += 1
@@ -155,23 +141,12 @@ def found_city(state: State, unit_id: int, rng: Random | None = None) -> City:
         claimed={unit.pos},
     )
     city.claimed.add(city.pos)
-    claim_adjacent(state, city, rng)
-    
+
     state.cities[city.id] = city
     state.next_city_id += 1
     del state.units[unit.id]
-    neighbors: list[Coord] = []
-    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-        coord = (city.pos[0] + dx, city.pos[1] + dy)
-        if not in_bounds(state, coord):
-            continue
-        if state.tile_at(coord).kind == "water":
-            continue
-        if any(coord in c.claimed for c in state.cities.values()):
-            continue
-        neighbors.append(coord)
-    if neighbors:
-        city.claimed.add(rng.choice(neighbors))
+
+    claim_best_tile(state, city, rng)
     return city
 
 
