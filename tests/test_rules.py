@@ -40,3 +40,8 @@ def test_win_condition():
     cid = next(iter(state.cities))
     state.cities[cid].owner = 1
     assert rules.check_win(state) == 1
+
+
+def test_no_win_without_cities():
+    state = make_state()
+    assert rules.check_win(state) is None
