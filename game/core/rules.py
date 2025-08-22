@@ -103,14 +103,14 @@ def buy_unit(state: State, city_id: int, kind: str) -> Unit:
 
 
 def check_win(state: State) -> int | None:
-    """Return winning player id if a side has no cities."""
-    if not state.cities:
-        return None
-    owners = {city.owner for city in state.cities.values()}
-    if 0 not in owners:
-        return 1
-    if 1 not in owners:
-        return 0
+    """Return winning player if a side has no cities *and* no settlers."""
+    city_owners = {city.owner for city in state.cities.values()}
+    settler_owners = {
+        unit.owner for unit in state.units.values() if unit.kind == "settler"
+    }
+    for player_id in state.players:
+        if player_id not in city_owners and player_id not in settler_owners:
+            return 1 - player_id
     return None
 
 

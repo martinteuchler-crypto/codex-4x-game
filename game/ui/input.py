@@ -16,8 +16,7 @@ class InputHandler:
         self.hud = hud
         self.selected: int | None = None
         self.hud.found_city.disable()
-        self.hud.end_turn.disable()
-        self.hud.show_message("Found a city to end your turn")
+        self.hud.hide_message()
 
     def handle_event(self, event: pygame.event.Event, state: State) -> None:
         self.hud.process_event(event)
