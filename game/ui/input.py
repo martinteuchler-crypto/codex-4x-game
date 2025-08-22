@@ -24,7 +24,30 @@ class InputHandler:
         if self.selected is not None and self.selected not in state.units:
             self.selected = None
             self.hud.found_city.disable()
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if event.type == pygame.MOUSEMOTION:
+            x, y = event.pos
+            if (
+                y >= state.height * config.TILE_SIZE
+                or x < 0
+                or x >= state.width * config.TILE_SIZE
+            ):
+                self.hud.clear_hover_info()
+                return
+            coord = (x // config.TILE_SIZE, y // config.TILE_SIZE)
+            units = state.units_at(coord)
+            if units:
+                unit = units[0]
+                text = f"{unit.kind} (Player {unit.owner})"
+            else:
+                city = state.city_at(coord)
+                if city is not None:
+                    text = f"City (Player {city.owner})"
+                else:
+                    tile = state.tile_at(coord)
+                    food, prod = config.YIELD[tile.kind]
+                    text = f"{tile.kind} F:{food} P:{prod}"
+            self.hud.set_hover_info(text)
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             x, y = event.pos
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
             self.selected = None
@@ -46,15 +69,20 @@ class InputHandler:
                 dest = (x // config.TILE_SIZE, y // config.TILE_SIZE)
                 try:
                     rules.move_unit(state, self.selected, dest)
-                except (rules.RuleError, KeyError):
-                    pass
+                    self.hud.hide_message()
+                except rules.RuleError as e:
+                    self.hud.show_message(str(e))
+                except KeyError:
+                    self.hud.show_message("Cannot move there")
             else:
                 self.selected = None
                 self.hud.found_city.disable()
+                self.hud.show_message("No unit selected")
         elif event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.hud.end_turn:
                     rules.end_turn(state)
+                    self.hud.hide_message()
                 elif (
                     event.ui_element == self.hud.found_city
                     and self.selected is not None
@@ -65,7 +93,13 @@ class InputHandler:
                         rules.found_city(state, self.selected)
                         self.selected = None
                         self.hud.found_city.disable()
-                    except (rules.RuleError, KeyError):
+                        self.hud.hide_message()
+                    except rules.RuleError as e:
+                        self.hud.show_message(str(e))
+                        self.selected = None
+                        self.hud.found_city.disable()
+                    except KeyError:
+                        self.hud.show_message("Cannot found city")
                         self.selected = None
                         self.hud.found_city.disable()
 
@@ -74,14 +108,20 @@ class InputHandler:
                         if city.owner == state.current_player:
                             try:
                                 rules.buy_unit(state, city.id, "scout")
-                            except (rules.RuleError, KeyError):
-                                pass
+                                self.hud.hide_message()
+                            except rules.RuleError as e:
+                                self.hud.show_message(str(e))
+                            except KeyError:
+                                self.hud.show_message("Cannot buy unit")
                             break
                 elif event.ui_element == self.hud.buy_soldier:
                     for city in state.cities.values():
                         if city.owner == state.current_player:
                             try:
                                 rules.buy_unit(state, city.id, "soldier")
-                            except (rules.RuleError, KeyError):
-                                pass
+                                self.hud.hide_message()
+                            except rules.RuleError as e:
+                                self.hud.show_message(str(e))
+                            except KeyError:
+                                self.hud.show_message("Cannot buy unit")
                             break

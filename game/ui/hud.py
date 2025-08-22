@@ -13,27 +13,27 @@ class HUD:
         self.rect = rect
         self.manager = pygame_gui.UIManager(rect.size)
         self.end_turn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(10, 10, 80, 40),
+            relative_rect=pygame.Rect(10, 5, 80, 30),
             text="End Turn",
             manager=self.manager,
         )
         self.found_city = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(100, 10, 100, 40),
+            relative_rect=pygame.Rect(100, 5, 100, 30),
             text="Found City",
             manager=self.manager,
         )
         self.buy_scout = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(210, 10, 100, 40),
+            relative_rect=pygame.Rect(210, 5, 100, 30),
             text="Buy Scout",
             manager=self.manager,
         )
         self.buy_soldier = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(320, 10, 100, 40),
+            relative_rect=pygame.Rect(320, 5, 100, 30),
             text="Buy Soldier",
             manager=self.manager,
         )
         self.info = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(430, 10, 200, 40),
+            relative_rect=pygame.Rect(430, 5, 200, 30),
             text="",
             manager=self.manager,
         )
@@ -54,6 +54,7 @@ class HUD:
         self.message.rebuild()
         self.message.hide()
         self._message_timer: float | None = None
+
 
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
@@ -85,3 +86,15 @@ class HUD:
         self.message.set_text(text)
         self.message.show()
         self._message_timer = timeout
+        
+    def hide_hint(self) -> None:
+        self.hint.hide()
+
+    def set_hover_info(self, text: str) -> None:
+        """Display hover information about map elements."""
+        self.hover.set_text(text)
+        self.hover.show()
+
+    def clear_hover_info(self) -> None:
+        """Hide hover information."""
+        self.hover.hide()
