@@ -41,6 +41,11 @@ class HUD:
             container=self.panel,
             manager=self.manager,
         )
+        # Expand upwards so the menu remains fully visible above the HUD
+        self.buy_unit.expand_direction = "up"
+        for state in self.buy_unit.menu_states.values():
+            state.expand_direction = "up"
+        self.buy_unit.rebuild()
         self.buy_unit.disable()
         self.info = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(370, 5, 200, 30),
@@ -103,3 +108,10 @@ class HUD:
         """Hide any active message immediately."""
         self.message.hide()
         self._message_timer = None
+
+    def reset_buy_unit(self) -> None:
+        """Return the buy-unit menu to its placeholder option."""
+        self.buy_unit.selected_option = ("Buy Unit", "Buy Unit")
+        if self.buy_unit.current_state is not None:
+            self.buy_unit.current_state.selected_option = self.buy_unit.selected_option
+            self.buy_unit.current_state.rebuild()
