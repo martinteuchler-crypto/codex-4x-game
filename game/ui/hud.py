@@ -12,27 +12,27 @@ class HUD:
     def __init__(self, rect: pygame.Rect) -> None:
         self.manager = pygame_gui.UIManager(rect.size)
         self.end_turn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(10, 10, 80, 40),
+            relative_rect=pygame.Rect(10, 5, 80, 30),
             text="End Turn",
             manager=self.manager,
         )
         self.found_city = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(100, 10, 100, 40),
+            relative_rect=pygame.Rect(100, 5, 100, 30),
             text="Found City",
             manager=self.manager,
         )
         self.buy_scout = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(210, 10, 100, 40),
+            relative_rect=pygame.Rect(210, 5, 100, 30),
             text="Buy Scout",
             manager=self.manager,
         )
         self.buy_soldier = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(320, 10, 100, 40),
+            relative_rect=pygame.Rect(320, 5, 100, 30),
             text="Buy Soldier",
             manager=self.manager,
         )
         self.info = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(430, 10, 200, 40),
+            relative_rect=pygame.Rect(430, 5, 200, 30),
             text="",
             manager=self.manager,
         )
@@ -48,6 +48,12 @@ class HUD:
             manager=self.manager,
         )
         self.hint.hide()
+        self.message = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(320, 40, 300, 20),
+            text="",
+            manager=self.manager,
+        )
+        self.message.hide()
 
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
