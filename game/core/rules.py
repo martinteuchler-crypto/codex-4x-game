@@ -64,6 +64,8 @@ def end_turn(state: State) -> None:
 
 def found_city(state: State, unit_id: int) -> City:
     unit = state.units[unit_id]
+    if unit.kind != "settler":
+        raise RuleError("only settlers can found cities")
     tile = state.tile_at(unit.pos)
     if tile.kind == "water":
         raise RuleError("cannot found on water")

@@ -15,16 +15,25 @@ class InputHandler:
     def __init__(self, hud: HUD) -> None:
         self.hud = hud
         self.selected: int | None = None
+        self.hud.found_city.disable()
 
     def handle_event(self, event: pygame.event.Event, state: State) -> None:
         self.hud.process_event(event)
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             x, y = event.pos
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
+            self.selected = None
             for unit in state.units.values():
                 if unit.pos == tile and unit.owner == state.current_player:
                     self.selected = unit.id
                     break
+            if (
+                self.selected is not None
+                and state.units[self.selected].kind == "settler"
+            ):
+                self.hud.found_city.enable()
+            else:
+                self.hud.found_city.disable()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
             if self.selected is not None:
                 x, y = event.pos
@@ -40,10 +49,12 @@ class InputHandler:
                 elif (
                     event.ui_element == self.hud.found_city
                     and self.selected is not None
+                    and state.units[self.selected].kind == "settler"
                 ):
                     try:
                         rules.found_city(state, self.selected)
                         self.selected = None
+                        self.hud.found_city.disable()
                     except rules.RuleError:
                         pass
                 elif event.ui_element == self.hud.buy_scout:

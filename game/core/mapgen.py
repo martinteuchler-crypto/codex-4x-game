@@ -51,7 +51,7 @@ def initial_units(spawns: List[Tuple[int, int]]) -> List[Unit]:
                 owner=owner,
                 kind="scout",
                 pos=pos,
-                moves_left=config.UNIT_STATS["scout"]["moves"],
+                moves_left=config.UNIT_STATS["settler"]["moves"],
             )
         )
         uid += 1
