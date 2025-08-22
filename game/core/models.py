@@ -30,9 +30,12 @@ class City:
     id: int
     owner: int
     pos: Coord
-    size: Set[Coord] = field(default_factory=set)
+    size: int = 1
     claimed: Set[Coord] = field(default_factory=set)
-
+      
+    def claim(self, coord: Coord) -> None:
+        """Add a coordinate to the city's claimed tiles."""
+        self.claimed.add(coord)
 
 @dataclass
 class Player:
@@ -69,10 +72,10 @@ class State:
 
 
 __all__ = [
-    "Coord",
-    "Tile",
-    "Unit",
     "City",
+    "Coord",
     "Player",
     "State",
+    "Tile",
+    "Unit",
 ]

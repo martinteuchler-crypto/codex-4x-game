@@ -34,6 +34,7 @@ def state_to_dict(state: State) -> Dict[str, Any]:
                 "pos": list(c.pos),
                 "size": [list(s) for s in sorted(c.size)],
                 "claimed": [list(s) for s in sorted(c.claimed)],
+
             }
             for cid, c in state.cities.items()
         },
