@@ -205,4 +205,4 @@ class InputHandler:
                         self.hud.show_message(str(e))
                     except KeyError:
                         self.hud.show_message("Cannot buy unit")
-                self.hud.buy_unit.set_selected_option("Buy Unit")
+                self.hud.reset_buy_unit()
