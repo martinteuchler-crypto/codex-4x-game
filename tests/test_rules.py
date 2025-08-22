@@ -1,5 +1,7 @@
 from random import Random
 
+import pytest
+
 from game import config
 from game.core import mapgen, rules
 from game.core.models import Player, State
@@ -22,6 +24,19 @@ def test_movement_cost_and_fog():
     assert state.units[uid].moves_left < config.UNIT_STATS["settler"]["moves"]
     tile = state.tile_at(dest)
     assert state.current_player in tile.revealed_by
+
+
+def test_move_diagonally_and_block_teleport():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    unit = state.units[uid]
+    diag = (unit.pos[0] + 1, unit.pos[1] + 1)
+    rules.move_unit(state, uid, diag)
+    assert unit.pos == diag
+    # teleport two tiles horizontally should fail
+    far = (diag[0] + 2, diag[1])
+    with pytest.raises(rules.RuleError):
+        rules.move_unit(state, uid, far)
 
 
 def test_found_city_and_buy_unit():

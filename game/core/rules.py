@@ -55,6 +55,10 @@ def move_unit(state: State, unit_id: int, dest: Coord) -> None:
         raise RuleError("not your unit")
     if not in_bounds(state, dest):
         raise RuleError("out of bounds")
+    dx = abs(dest[0] - unit.pos[0])
+    dy = abs(dest[1] - unit.pos[1])
+    if max(dx, dy) != 1:
+        raise RuleError("must move to adjacent tile")
     tile = state.tile_at(dest)
     cost = config.MOVE_COST[tile.kind]
     if cost > unit.moves_left:
