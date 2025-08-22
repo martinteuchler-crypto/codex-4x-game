@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from random import Random
+
 import pygame
 import pygame_gui
 
@@ -20,7 +22,9 @@ class InputHandler:
         self.hud.buy_unit.disable()
         self.hud.hide_message()
 
-    def handle_event(self, event: pygame.event.Event, state: State) -> None:
+    def handle_event(
+        self, event: pygame.event.Event, state: State, rng: Random
+    ) -> None:
         self.hud.process_event(event)
         if self.selected is not None and self.selected not in state.units:
             self.selected = None
@@ -33,12 +37,13 @@ class InputHandler:
             self.hud.buy_unit.disable()
         if event.type == pygame.MOUSEMOTION:
             x, y = event.pos
-            # Ignore motion outside the map area, including over the HUD,
-            # to prevent hover info from interfering with HUD interactions.
+            # Ignore motion outside the map area or over the HUD (including the
+            # expanded buy-unit dropdown) to prevent hover info from
+            # interfering with HUD interactions.
             map_rect = pygame.Rect(
                 0, 0, state.width * config.TILE_SIZE, state.height * config.TILE_SIZE
             )
-            if not map_rect.collidepoint(x, y):
+            if not map_rect.collidepoint(x, y) or self.hud.contains_point((x, y)):
                 self.hud.clear_hover_info()
                 return
             coord = (x // config.TILE_SIZE, y // config.TILE_SIZE)
@@ -60,7 +65,7 @@ class InputHandler:
             map_rect = pygame.Rect(
                 0, 0, state.width * config.TILE_SIZE, state.height * config.TILE_SIZE
             )
-            if self.hud.rect.collidepoint(x, y) or not map_rect.collidepoint(x, y):
+            if self.hud.contains_point((x, y)) or not map_rect.collidepoint(x, y):
                 # Clicking HUD or outside the map should not affect selection.
                 return
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
@@ -88,7 +93,7 @@ class InputHandler:
             map_rect = pygame.Rect(
                 0, 0, state.width * config.TILE_SIZE, state.height * config.TILE_SIZE
             )
-            if self.hud.rect.collidepoint(x, y) or not map_rect.collidepoint(x, y):
+            if self.hud.contains_point((x, y)) or not map_rect.collidepoint(x, y):
                 return
             if self.selected is not None and self.selected in state.units:
                 dest = (x // config.TILE_SIZE, y // config.TILE_SIZE)
@@ -133,7 +138,7 @@ class InputHandler:
                 and state.units[self.selected].kind == "settler"
             ):
                 try:
-                    city = rules.found_city(state, self.selected)
+                    city = rules.found_city(state, self.selected, rng)
                     self.selected = None
                     self.selected_city = city.id
                     self.hud.found_city.disable()
@@ -174,7 +179,7 @@ class InputHandler:
                     and state.units[self.selected].kind == "settler"
                 ):
                     try:
-                        city = rules.found_city(state, self.selected)
+                        city = rules.found_city(state, self.selected, rng)
                         self.selected = None
                         self.selected_city = city.id
                         self.hud.found_city.disable()

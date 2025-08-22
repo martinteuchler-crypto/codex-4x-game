@@ -112,7 +112,7 @@ def end_turn(state: State) -> None:
             unit.moves_left = config.UNIT_STATS[unit.kind]["moves"]
 
 
-def found_city(state: State, unit_id: int) -> City:
+def found_city(state: State, unit_id: int, rng: Random) -> City:
     unit = state.units[unit_id]
     if unit.kind != "settler":
         raise RuleError("only settlers can found cities")
@@ -127,9 +127,22 @@ def found_city(state: State, unit_id: int) -> City:
         pos=unit.pos,
         claimed={unit.pos},
     )
+  
     state.cities[city.id] = city
     state.next_city_id += 1
     del state.units[unit.id]
+    neighbors: list[Coord] = []
+    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+        coord = (city.pos[0] + dx, city.pos[1] + dy)
+        if not in_bounds(state, coord):
+            continue
+        if state.tile_at(coord).kind == "water":
+            continue
+        if any(coord in c.claimed for c in state.cities.values()):
+            continue
+        neighbors.append(coord)
+    if neighbors:
+        city.claimed.add(rng.choice(neighbors))
     return city
 
 
