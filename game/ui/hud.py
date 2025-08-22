@@ -36,6 +36,14 @@ class HUD:
             text="",
             manager=self.manager,
         )
+        hover_width = 200
+        self.hover_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(
+                rect.width - hover_width - 10, rect.height - 50, hover_width, 40
+            ),
+            text="",
+            manager=self.manager,
+        )
 
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
