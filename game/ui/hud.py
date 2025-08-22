@@ -36,8 +36,14 @@ class HUD:
             text="",
             manager=self.manager,
         )
+        self.hover = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(10, 50, 300, 20),
+            text="",
+            manager=self.manager,
+        )
+        self.hover.hide()
         self.hint = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(10, 40, 300, 20),
+            relative_rect=pygame.Rect(320, 50, 300, 20),
             text="",
             manager=self.manager,
         )
@@ -70,10 +76,11 @@ class HUD:
     def hide_hint(self) -> None:
         self.hint.hide()
 
-    def show_message(self, text: str) -> None:
-        """Display a transient warning or info message."""
-        self.message.set_text(text)
-        self.message.show()
+    def set_hover_info(self, text: str) -> None:
+        """Display hover information about map elements."""
+        self.hover.set_text(text)
+        self.hover.show()
 
-    def hide_message(self) -> None:
-        self.message.hide()
+    def clear_hover_info(self) -> None:
+        """Hide hover information."""
+        self.hover.hide()

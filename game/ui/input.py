@@ -25,7 +25,30 @@ class InputHandler:
         if self.selected is not None and self.selected not in state.units:
             self.selected = None
             self.hud.found_city.disable()
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if event.type == pygame.MOUSEMOTION:
+            x, y = event.pos
+            if (
+                y >= state.height * config.TILE_SIZE
+                or x < 0
+                or x >= state.width * config.TILE_SIZE
+            ):
+                self.hud.clear_hover_info()
+                return
+            coord = (x // config.TILE_SIZE, y // config.TILE_SIZE)
+            units = state.units_at(coord)
+            if units:
+                unit = units[0]
+                text = f"{unit.kind} (Player {unit.owner})"
+            else:
+                city = state.city_at(coord)
+                if city is not None:
+                    text = f"City (Player {city.owner})"
+                else:
+                    tile = state.tile_at(coord)
+                    food, prod = config.YIELD[tile.kind]
+                    text = f"{tile.kind} F:{food} P:{prod}"
+            self.hud.set_hover_info(text)
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             x, y = event.pos
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
             self.selected = None
