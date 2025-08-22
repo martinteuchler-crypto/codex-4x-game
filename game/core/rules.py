@@ -82,13 +82,16 @@ def buy_unit(state: State, city_id: int, kind: str) -> Unit:
     city = state.cities[city_id]
     if city.owner != state.current_player:
         raise RuleError("not your city")
-    cost = config.UNIT_STATS[kind]["cost"]
+    stats = config.UNIT_STATS[kind]
+    cost_food = stats.get("food", 0)
+    cost_prod = stats.get("prod", 0)
     player = state.players[city.owner]
-    if player.prod < cost:
-        raise RuleError("not enough production")
+    if player.food < cost_food or player.prod < cost_prod:
+        raise RuleError("not enough resources")
     if state.units_at(city.pos):
         raise RuleError("tile occupied")
-    player.prod -= cost
+    player.food -= cost_food
+    player.prod -= cost_prod
     unit = Unit(
         id=state.next_unit_id,
         owner=city.owner,

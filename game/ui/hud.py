@@ -34,20 +34,16 @@ class HUD:
             container=self.panel,
             manager=self.manager,
         )
-        self.buy_scout = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(210, 5, 100, 30),
-            text="Buy Scout",
+        self.buy_unit = pygame_gui.elements.UIDropDownMenu(
+            options_list=["Buy Unit", "Buy Scout", "Buy Soldier", "Buy Settler"],
+            starting_option="Buy Unit",
+            relative_rect=pygame.Rect(210, 5, 150, 30),
             container=self.panel,
             manager=self.manager,
         )
-        self.buy_soldier = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(320, 5, 100, 30),
-            text="Buy Soldier",
-            container=self.panel,
-            manager=self.manager,
-        )
+        self.buy_unit.disable()
         self.info = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(430, 5, 200, 30),
+            relative_rect=pygame.Rect(370, 5, 200, 30),
             text="",
             container=self.panel,
             manager=self.manager,
