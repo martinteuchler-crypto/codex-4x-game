@@ -100,11 +100,13 @@ class InputHandler:
                 except KeyError:
                     self.hud.show_message("Cannot move there")
             else:
+                # Do not clear a selected city when right-clicking with no unit
+                # selected so its claimed tiles remain highlighted.
                 self.selected = None
-                self.selected_city = None
                 self.hud.found_city.disable()
-                self.hud.buy_unit.disable()
-                self.hud.show_message("No unit selected")
+                if self.selected_city is None:
+                    self.hud.buy_unit.disable()
+                    self.hud.show_message("No unit selected")
         elif event.type == pygame.KEYDOWN:
             if (
                 self.selected is not None
