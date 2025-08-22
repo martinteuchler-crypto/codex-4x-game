@@ -26,11 +26,12 @@ class InputHandler:
             self.hud.found_city.disable()
         if event.type == pygame.MOUSEMOTION:
             x, y = event.pos
-            if (
-                y >= state.height * config.TILE_SIZE
-                or x < 0
-                or x >= state.width * config.TILE_SIZE
-            ):
+            # Ignore motion outside the map area, including over the HUD,
+            # to prevent hover info from interfering with HUD interactions.
+            map_rect = pygame.Rect(
+                0, 0, state.width * config.TILE_SIZE, state.height * config.TILE_SIZE
+            )
+            if not map_rect.collidepoint(x, y):
                 self.hud.clear_hover_info()
                 return
             coord = (x // config.TILE_SIZE, y // config.TILE_SIZE)
@@ -49,7 +50,11 @@ class InputHandler:
             self.hud.set_hover_info(text)
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             x, y = event.pos
-            if y >= state.height * config.TILE_SIZE:
+            map_rect = pygame.Rect(
+                0, 0, state.width * config.TILE_SIZE, state.height * config.TILE_SIZE
+            )
+            if self.hud.rect.collidepoint(x, y) or not map_rect.collidepoint(x, y):
+                # Clicking HUD or outside the map should not affect selection.
                 return
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
             self.selected = None
@@ -66,8 +71,13 @@ class InputHandler:
             else:
                 self.hud.found_city.disable()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
+            x, y = event.pos
+            map_rect = pygame.Rect(
+                0, 0, state.width * config.TILE_SIZE, state.height * config.TILE_SIZE
+            )
+            if self.hud.rect.collidepoint(x, y) or not map_rect.collidepoint(x, y):
+                return
             if self.selected is not None and self.selected in state.units:
-                x, y = event.pos
                 dest = (x // config.TILE_SIZE, y // config.TILE_SIZE)
                 try:
                     rules.move_unit(state, self.selected, dest)
