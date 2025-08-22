@@ -31,6 +31,7 @@ class City:
     owner: int
     pos: Coord
     size: int = 1
+    food_stock: int = 0
     claimed: Set[Coord] = field(default_factory=set)
       
     def claim(self, coord: Coord) -> None:
