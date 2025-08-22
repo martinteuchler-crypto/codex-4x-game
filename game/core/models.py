@@ -20,7 +20,7 @@ class Tile:
 class Unit:
     id: int
     owner: int  # 0 human, 1 ai
-    kind: str  # 'scout' | 'soldier'
+    kind: str  # 'scout' | 'soldier' | 'settler'
     pos: Coord
     moves_left: int
 

@@ -38,9 +38,9 @@ def initial_units(spawns: List[Tuple[int, int]]) -> List[Unit]:
             Unit(
                 id=i + 1,
                 owner=i,
-                kind="scout",
+                kind="settler",
                 pos=pos,
-                moves_left=config.UNIT_STATS["scout"]["moves"],
+                moves_left=config.UNIT_STATS["settler"]["moves"],
             )
         )
     return units
