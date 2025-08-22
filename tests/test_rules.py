@@ -33,6 +33,20 @@ def test_found_city_and_buy_unit():
     assert any(u.kind == "soldier" for u in state.units.values())
 
 
+def test_buy_settler_costs_food_and_production():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    rules.found_city(state, uid)
+    cid = next(iter(state.cities))
+    player = state.players[0]
+    player.food = 2
+    player.prod = 1
+    rules.buy_unit(state, cid, "settler")
+    assert any(u.kind == "settler" for u in state.units.values())
+    assert player.food == 0 and player.prod == 0
+
+
 def test_win_condition():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
