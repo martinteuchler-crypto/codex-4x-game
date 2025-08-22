@@ -20,6 +20,7 @@ COLORS = {
 }
 
 HIGHLIGHT_COLOR = (255, 255, 0)
+FONT: pygame.font.Font | None = None
 
 
 def draw(
@@ -28,6 +29,9 @@ def draw(
     selected_unit_id: int | None = None,
     selected_city_id: int | None = None,
 ) -> None:
+    global FONT
+    if FONT is None:
+        FONT = pygame.font.Font(None, 16)
     ts = config.TILE_SIZE
     for tile in state.tiles:
         rect = pygame.Rect(tile.x * ts, tile.y * ts, ts, ts)
@@ -38,6 +42,10 @@ def draw(
     for city in state.cities.values():
         rect = pygame.Rect(city.pos[0] * ts, city.pos[1] * ts, ts, ts)
         surface.fill(COLORS["city"], rect)
+        if FONT:
+            text = FONT.render(str(city.size), True, (0, 0, 0))
+            text_rect = text.get_rect(center=rect.center)
+            surface.blit(text, text_rect)
     for unit in state.units.values():
         rect = pygame.Rect(unit.pos[0] * ts + 8, unit.pos[1] * ts + 8, ts - 16, ts - 16)
         surface.fill(COLORS[unit.kind], rect)
