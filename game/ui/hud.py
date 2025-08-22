@@ -11,30 +11,45 @@ from ..core.models import State
 class HUD:
     def __init__(self, rect: pygame.Rect) -> None:
         self.rect = rect
-        self.manager = pygame_gui.UIManager(rect.size)
+        # UIManager needs the full screen size so elements can be positioned
+        # anywhere. A panel constrained to ``rect`` holds all HUD widgets so
+        # that their coordinates are relative to the HUD area rather than the
+        # map. This prevents map click handling from interfering with HUD
+        # interactions.
+        screen_size = pygame.display.get_surface().get_size()
+        self.manager = pygame_gui.UIManager(screen_size)
+        self.panel = pygame_gui.elements.UIPanel(
+            relative_rect=self.rect,
+            manager=self.manager,
+        )
         self.end_turn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(10, 5, 80, 30),
             text="End Turn",
+            container=self.panel,
             manager=self.manager,
         )
         self.found_city = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(100, 5, 100, 30),
             text="Found City",
+            container=self.panel,
             manager=self.manager,
         )
         self.buy_scout = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(210, 5, 100, 30),
             text="Buy Scout",
+            container=self.panel,
             manager=self.manager,
         )
         self.buy_soldier = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(320, 5, 100, 30),
             text="Buy Soldier",
+            container=self.panel,
             manager=self.manager,
         )
         self.info = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(430, 5, 200, 30),
             text="",
+            container=self.panel,
             manager=self.manager,
         )
         self.hover_info = pygame_gui.elements.UILabel(
@@ -42,12 +57,14 @@ class HUD:
                 self.rect.width - 210, self.rect.height - 30, 200, 20
             ),
             text="",
+            container=self.panel,
             manager=self.manager,
         )
         self.hover_info.hide()
         self.message = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(10, self.rect.height - 30, 300, 20),
             text="",
+            container=self.panel,
             manager=self.manager,
         )
         self.message.text_colour = pygame.Color("red")
