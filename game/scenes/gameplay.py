@@ -45,7 +45,12 @@ class Gameplay:
             if self.state.current_player == 1:
                 ai.ai_turn(self.state, rng)
             self.hud.update(time_delta, self.state)
-            draw(self.state, self.screen, self.input.selected)
+            draw(
+                self.state,
+                self.screen,
+                self.input.selected,
+                self.input.selected_city,
+            )
             self.hud.draw(self.screen)
             pygame.display.flip()
             if check_win(self.state) is not None:
