@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from random import Random
+
 from .. import config
 from .models import City, Coord, State, Unit
 
@@ -62,7 +64,7 @@ def end_turn(state: State) -> None:
             unit.moves_left = config.UNIT_STATS[unit.kind]["moves"]
 
 
-def found_city(state: State, unit_id: int) -> City:
+def found_city(state: State, unit_id: int, rng: Random) -> City:
     unit = state.units[unit_id]
     if unit.kind != "settler":
         raise RuleError("only settlers can found cities")
@@ -72,9 +74,22 @@ def found_city(state: State, unit_id: int) -> City:
     if state.city_at(unit.pos):
         raise RuleError("city exists")
     city = City(id=state.next_city_id, owner=unit.owner, pos=unit.pos)
+    city.claimed.add(city.pos)
     state.cities[city.id] = city
     state.next_city_id += 1
     del state.units[unit.id]
+    neighbors: list[Coord] = []
+    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+        coord = (city.pos[0] + dx, city.pos[1] + dy)
+        if not in_bounds(state, coord):
+            continue
+        if state.tile_at(coord).kind == "water":
+            continue
+        if any(coord in c.claimed for c in state.cities.values()):
+            continue
+        neighbors.append(coord)
+    if neighbors:
+        city.claimed.add(rng.choice(neighbors))
     return city
 
 

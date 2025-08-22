@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from random import Random
+
 import pygame
 import pygame_gui
 
@@ -20,7 +22,9 @@ class InputHandler:
         self.hud.buy_unit.disable()
         self.hud.hide_message()
 
-    def handle_event(self, event: pygame.event.Event, state: State) -> None:
+    def handle_event(
+        self, event: pygame.event.Event, state: State, rng: Random
+    ) -> None:
         self.hud.process_event(event)
         if self.selected is not None and self.selected not in state.units:
             self.selected = None
@@ -133,7 +137,7 @@ class InputHandler:
                 and state.units[self.selected].kind == "settler"
             ):
                 try:
-                    city = rules.found_city(state, self.selected)
+                    city = rules.found_city(state, self.selected, rng)
                     self.selected = None
                     self.selected_city = city.id
                     self.hud.found_city.disable()
@@ -174,7 +178,7 @@ class InputHandler:
                     and state.units[self.selected].kind == "settler"
                 ):
                     try:
-                        city = rules.found_city(state, self.selected)
+                        city = rules.found_city(state, self.selected, rng)
                         self.selected = None
                         self.selected_city = city.id
                         self.hud.found_city.disable()
