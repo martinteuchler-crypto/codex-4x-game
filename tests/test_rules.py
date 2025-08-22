@@ -47,3 +47,20 @@ def test_win_condition():
 def test_no_win_without_cities():
     state = make_state()
     assert rules.check_win(state) is None
+
+
+def test_no_win_if_opponent_has_settler():
+    state = make_state()
+    uid = next(
+        uid for uid, u in state.units.items() if u.kind == "settler" and u.owner == 0
+    )
+    state.units[uid].pos = (2, 2)
+    state.tile_at((2, 2)).kind = "plains"
+    rules.found_city(state, uid)
+    assert rules.check_win(state) is None
+
+
+def test_end_turn_without_city():
+    state = make_state()
+    rules.end_turn(state)
+    assert state.current_player == 1

@@ -24,6 +24,11 @@ python -m game.main
 - **Enter**: end turn
 - **Q**: quit game
 
+### Win/Lose
+
+You lose only when you have no cities and no settler units remaining. As long as
+you control a city or a settler, the game continues.
+
 ## Tests
 ```bash
 pytest -q

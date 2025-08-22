@@ -75,11 +75,11 @@ This document tells a code-generating agent exactly what to build and how to str
 
 ### Win/Lose
 
-* Win: Opponent has **no cities**. Lose: Player has **no cities**.
+* Win: Opponent has **no cities and no settlers**. Lose: Player has **no cities and no settlers**.
 
 ### UX
 
-* Left-click to select; right-click to move. Buttons: End Turn, Found City, Buy Unit (Soldier/Scout) if at city and enough production. Hotkeys: **W/A/S/D** to move, **F** to found city, **Enter** to end turn, **Q** to quit.
+* Left-click to select; right-click to move. Buttons: End Turn, Found City, Buy Unit (Soldier/Scout) if at city and enough production. Hotkeys: **W/A/S/D** to move, **F** to found city, **Enter** to end turn, **Q** to quit. The End Turn button is always available.
 * HUD shows: current player, turn number, resources, selected unit info.
 
 ---
