@@ -10,6 +10,7 @@ from ..core.models import State
 
 class HUD:
     def __init__(self, rect: pygame.Rect) -> None:
+        self.rect = rect
         self.manager = pygame_gui.UIManager(rect.size)
         self.end_turn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(10, 5, 80, 30),
@@ -36,24 +37,24 @@ class HUD:
             text="",
             manager=self.manager,
         )
-        self.hover = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(10, 50, 300, 20),
+        self.hover_info = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(
+                self.rect.width - 210, self.rect.height - 30, 200, 20
+            ),
             text="",
             manager=self.manager,
         )
-        self.hover.hide()
-        self.hint = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(320, 50, 300, 20),
-            text="",
-            manager=self.manager,
-        )
-        self.hint.hide()
+        self.hover_info.hide()
         self.message = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(320, 40, 300, 20),
+            relative_rect=pygame.Rect(10, self.rect.height - 30, 300, 20),
             text="",
             manager=self.manager,
         )
+        self.message.text_colour = pygame.Color("red")
+        self.message.rebuild()
         self.message.hide()
+        self._message_timer: float | None = None
+
 
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
@@ -64,15 +65,28 @@ class HUD:
             f"Turn {state.turn} Player {state.current_player} "
             f"F:{player.food} P:{player.prod}"
         )
+        if self._message_timer is not None:
+            self._message_timer -= time_delta
+            if self._message_timer <= 0:
+                self.message.hide()
+                self._message_timer = None
         self.manager.update(time_delta)
 
     def draw(self, surface: pygame.Surface) -> None:
         self.manager.draw_ui(surface)
 
-    def show_hint(self, text: str) -> None:
-        self.hint.set_text(text)
-        self.hint.show()
+    def set_hover_info(self, text: str) -> None:
+        self.hover_info.set_text(text)
+        self.hover_info.show()
 
+    def clear_hover_info(self) -> None:
+        self.hover_info.hide()
+
+    def show_message(self, text: str, timeout: float | None = None) -> None:
+        self.message.set_text(text)
+        self.message.show()
+        self._message_timer = timeout
+        
     def hide_hint(self) -> None:
         self.hint.hide()
 
