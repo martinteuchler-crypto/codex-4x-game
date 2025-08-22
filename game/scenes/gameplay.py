@@ -38,6 +38,8 @@ class Gameplay:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+                    running = False
                 else:
                     self.input.handle_event(event, self.state)
             if self.state.current_player == 1:

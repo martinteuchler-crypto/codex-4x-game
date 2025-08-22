@@ -79,7 +79,7 @@ This document tells a code-generating agent exactly what to build and how to str
 
 ### UX
 
-* Left-click to select; right-click to move. Buttons: End Turn, Found City, Buy Unit (Soldier/Scout) if at city and enough production.
+* Left-click to select; right-click to move. Buttons: End Turn, Found City, Buy Unit (Soldier/Scout) if at city and enough production. Hotkeys: **W/A/S/D** to move, **F** to found city, **Enter** to end turn, **Q** to quit.
 * HUD shows: current player, turn number, resources, selected unit info.
 
 ---
