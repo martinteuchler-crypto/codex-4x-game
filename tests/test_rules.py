@@ -33,6 +33,17 @@ def test_found_city_and_buy_unit():
     assert any(u.kind == "soldier" for u in state.units.values())
 
 
+def test_found_city_on_start_tile():
+    state = make_state()
+    uid = next(
+        uid for uid, u in state.units.items() if u.kind == "settler" and u.owner == 0
+    )
+    start = state.units[uid].pos
+    city = rules.found_city(state, uid)
+    assert city.pos == start
+    assert state.city_at(start) is not None
+
+
 def test_win_condition():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")

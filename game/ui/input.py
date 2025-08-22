@@ -21,27 +21,28 @@ class InputHandler:
 
     def handle_event(self, event: pygame.event.Event, state: State) -> None:
         self.hud.process_event(event)
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
+            map_h = state.height * config.TILE_SIZE
+            if y >= map_h:
+                return
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
-            self.selected = None
-            for unit in state.units.values():
-                if unit.pos == tile and unit.owner == state.current_player:
-                    self.selected = unit.id
-                    break
-            if (
-                self.selected is not None
-                and state.units[self.selected].kind == "settler"
-            ):
-                self.hud.found_city.enable()
-            else:
-                self.hud.found_city.disable()
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-            if self.selected is not None:
-                x, y = event.pos
-                dest = (x // config.TILE_SIZE, y // config.TILE_SIZE)
+            if event.button == 1:
+                self.selected = None
+                for unit in state.units.values():
+                    if unit.pos == tile and unit.owner == state.current_player:
+                        self.selected = unit.id
+                        break
+                if (
+                    self.selected is not None
+                    and state.units[self.selected].kind == "settler"
+                ):
+                    self.hud.found_city.enable()
+                else:
+                    self.hud.found_city.disable()
+            elif event.button == 3 and self.selected is not None:
                 try:
-                    rules.move_unit(state, self.selected, dest)
+                    rules.move_unit(state, self.selected, tile)
                 except rules.RuleError:
                     pass
         elif event.type == pygame.USEREVENT:
