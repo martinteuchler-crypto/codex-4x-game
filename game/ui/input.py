@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import pygame
 import pygame_gui
 
@@ -9,6 +11,8 @@ from .. import config
 from ..core import rules
 from ..core.models import State
 from .hud import HUD
+
+logger = logging.getLogger(__name__)
 
 
 class InputHandler:
@@ -24,33 +28,36 @@ class InputHandler:
         if self.selected is not None and self.selected not in state.units:
             self.selected = None
             self.hud.found_city.disable()
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
-            tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
-            self.selected = None
-            for unit in state.units.values():
-                if unit.pos == tile and unit.owner == state.current_player:
-                    self.selected = unit.id
-                    break
-            if (
-                self.selected is not None
-                and self.selected in state.units
-                and state.units[self.selected].kind == "settler"
-            ):
-                self.hud.found_city.enable()
-            else:
-                self.hud.found_city.disable()
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-            if self.selected is not None and self.selected in state.units:
-                x, y = event.pos
-                dest = (x // config.TILE_SIZE, y // config.TILE_SIZE)
-                try:
-                    rules.move_unit(state, self.selected, dest)
-                except (rules.RuleError, KeyError):
-                    pass
-            else:
+            if y >= state.height * config.TILE_SIZE:
+                return
+            if event.button == 1:
+                tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
                 self.selected = None
-                self.hud.found_city.disable()
+                for unit in state.units.values():
+                    if unit.pos == tile and unit.owner == state.current_player:
+                        self.selected = unit.id
+                        break
+                if (
+                    self.selected is not None
+                    and self.selected in state.units
+                    and state.units[self.selected].kind == "settler"
+                ):
+                    self.hud.found_city.enable()
+                else:
+                    self.hud.found_city.disable()
+            elif event.button == 3:
+                if self.selected is not None and self.selected in state.units:
+                    dest = (x // config.TILE_SIZE, y // config.TILE_SIZE)
+                    try:
+                        rules.move_unit(state, self.selected, dest)
+                    except (rules.RuleError, KeyError):
+                        pass
+                else:
+                    self.selected = None
+                    self.hud.found_city.disable()
         elif event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.hud.end_turn:
@@ -65,7 +72,8 @@ class InputHandler:
                         rules.found_city(state, self.selected)
                         self.selected = None
                         self.hud.found_city.disable()
-                    except (rules.RuleError, KeyError):
+                    except (rules.RuleError, KeyError) as exc:
+                        logger.warning("Failed to found city: %s", exc)
                         self.selected = None
                         self.hud.found_city.disable()
 
