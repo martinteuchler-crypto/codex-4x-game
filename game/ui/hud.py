@@ -10,6 +10,8 @@ from ..core.models import State
 
 class HUD:
     def __init__(self, rect: pygame.Rect) -> None:
+        self.rect = rect
+        self.surface = pygame.Surface(rect.size, pygame.SRCALPHA)
         self.manager = pygame_gui.UIManager(rect.size)
         self.end_turn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(10, 10, 80, 40),
@@ -53,7 +55,9 @@ class HUD:
         self.manager.update(time_delta)
 
     def draw(self, surface: pygame.Surface) -> None:
-        self.manager.draw_ui(surface)
+        self.surface.fill((0, 0, 0, 0))
+        self.manager.draw_ui(self.surface)
+        surface.blit(self.surface, self.rect.topleft)
 
     def set_context(self, text: str) -> None:
         """Update the context info label."""
