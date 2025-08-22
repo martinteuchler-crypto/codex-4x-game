@@ -80,6 +80,49 @@ class InputHandler:
                 self.selected = None
                 self.hud.found_city.disable()
                 self.hud.show_message("No unit selected")
+        elif event.type == pygame.KEYDOWN:
+            if (
+                self.selected is not None
+                and self.selected in state.units
+                and event.key in {pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d}
+            ):
+                unit = state.units[self.selected]
+                dx, dy = {
+                    pygame.K_w: (0, -1),
+                    pygame.K_s: (0, 1),
+                    pygame.K_a: (-1, 0),
+                    pygame.K_d: (1, 0),
+                }[event.key]
+                dest = (unit.pos[0] + dx, unit.pos[1] + dy)
+                try:
+                    rules.move_unit(state, self.selected, dest)
+                    self.hud.hide_message()
+                except rules.RuleError as e:
+                    self.hud.show_message(str(e))
+                except KeyError:
+                    self.hud.show_message("Cannot move there")
+            elif (
+                event.key == pygame.K_f
+                and self.selected is not None
+                and self.selected in state.units
+                and state.units[self.selected].kind == "settler"
+            ):
+                try:
+                    rules.found_city(state, self.selected)
+                    self.selected = None
+                    self.hud.found_city.disable()
+                    self.hud.hide_message()
+                except rules.RuleError as e:
+                    self.hud.show_message(str(e))
+                    self.selected = None
+                    self.hud.found_city.disable()
+                except KeyError:
+                    self.hud.show_message("Cannot found city")
+                    self.selected = None
+                    self.hud.found_city.disable()
+            elif event.key == pygame.K_RETURN:
+                rules.end_turn(state)
+                self.hud.hide_message()
         elif event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.hud.end_turn:

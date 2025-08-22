@@ -17,6 +17,13 @@ pip install -r requirements.txt
 python -m game.main
 ```
 
+## Controls
+
+- **W/A/S/D**: move selected unit
+- **F**: found city
+- **Enter**: end turn
+- **Q**: quit game
+
 ## Tests
 ```bash
 pytest -q
