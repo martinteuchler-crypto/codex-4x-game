@@ -10,7 +10,7 @@ from .models import Tile, Unit
 
 
 def generate_map(w: int, h: int, seed: int) -> Tuple[List[Tile], List[Tuple[int, int]]]:
-    rng = Random()
+    rng = Random(seed)
     tiles: List[Tile] = []
     for y in range(h):
         for x in range(w):
@@ -51,7 +51,7 @@ def initial_units(spawns: List[Tuple[int, int]]) -> List[Unit]:
                 owner=owner,
                 kind="scout",
                 pos=pos,
-                moves_left=config.UNIT_STATS["settler"]["moves"],
+                moves_left=config.UNIT_STATS["scout"]["moves"],
             )
         )
         uid += 1

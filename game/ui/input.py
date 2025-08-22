@@ -16,6 +16,8 @@ class InputHandler:
         self.hud = hud
         self.selected: int | None = None
         self.hud.found_city.disable()
+        self.hud.end_turn.disable()
+        self.hud.show_hint("Found a city to end your turn")
 
     def handle_event(self, event: pygame.event.Event, state: State) -> None:
         self.hud.process_event(event)
@@ -66,6 +68,7 @@ class InputHandler:
                     except (rules.RuleError, KeyError):
                         self.selected = None
                         self.hud.found_city.disable()
+
                 elif event.ui_element == self.hud.buy_scout:
                     for city in state.cities.values():
                         if city.owner == state.current_player:

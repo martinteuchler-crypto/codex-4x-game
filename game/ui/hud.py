@@ -36,16 +36,30 @@ class HUD:
             text="",
             manager=self.manager,
         )
+        self.hint = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(10, 50, 300, 20),
+            text="",
+            manager=self.manager,
+        )
+        self.hint.hide()
 
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
 
     def update(self, time_delta: float, state: State) -> None:
+        player = state.players[state.current_player]
         self.info.set_text(
             f"Turn {state.turn} Player {state.current_player} "
-            f"F:{state.players[0].food} P:{state.players[0].prod}"
+            f"F:{player.food} P:{player.prod}"
         )
         self.manager.update(time_delta)
 
     def draw(self, surface: pygame.Surface) -> None:
         self.manager.draw_ui(surface)
+
+    def show_hint(self, text: str) -> None:
+        self.hint.set_text(text)
+        self.hint.show()
+
+    def hide_hint(self) -> None:
+        self.hint.hide()

@@ -37,6 +37,7 @@ def test_win_condition():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
+    state.tile_at((2, 2)).kind = "plains"
     rules.found_city(state, uid)
     cid = next(iter(state.cities))
     state.cities[cid].owner = 1
