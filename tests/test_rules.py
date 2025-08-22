@@ -1,3 +1,5 @@
+from random import Random
+
 from game import config
 from game.core import mapgen, rules
 from game.core.models import Player, State
@@ -78,3 +80,34 @@ def test_end_turn_without_city():
     state = make_state()
     rules.end_turn(state)
     assert state.current_player == 1
+
+
+def test_grow_city_cost_and_claim():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    city = rules.found_city(state, uid)
+    player = state.players[city.owner]
+    player.food = 10
+    rng = Random(0)
+    assert rules.grow_city(state, city, rng)
+    assert city.size == 2
+    assert len(city.claimed) == 2
+    assert player.food == 8
+
+
+def test_end_turn_uses_claimed_tiles_and_growth():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    city = rules.found_city(state, uid)
+    player = state.players[city.owner]
+    city.claimed.add((2, 3))
+    state.tile_at((2, 2)).kind = "plains"
+    state.tile_at((2, 3)).kind = "forest"
+    player.food = 2
+    rules.end_turn(state)
+    assert player.food == 1  # 2 + 1 (plains) + 0 (forest) - 2 (growth)
+    assert player.prod == 3  # 1 (plains) + 2 (forest)
+    assert city.size == 2
+    assert len(city.claimed) == 3

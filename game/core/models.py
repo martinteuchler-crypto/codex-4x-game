@@ -30,6 +30,8 @@ class City:
     id: int
     owner: int
     pos: Coord
+    size: int = 1
+    claimed: Set[Coord] = field(default_factory=set)
 
 
 @dataclass

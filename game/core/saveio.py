@@ -28,7 +28,13 @@ def state_to_dict(state: State) -> Dict[str, Any]:
             for uid, u in state.units.items()
         },
         "cities": {
-            cid: {"id": c.id, "owner": c.owner, "pos": list(c.pos)}
+            cid: {
+                "id": c.id,
+                "owner": c.owner,
+                "pos": list(c.pos),
+                "size": c.size,
+                "claimed": [list(coord) for coord in c.claimed],
+            }
             for cid, c in state.cities.items()
         },
         "players": {
@@ -58,7 +64,13 @@ def dict_to_state(data: Dict[str, Any]) -> State:
         for uid, u in data["units"].items()
     }
     cities = {
-        int(cid): City(id=c["id"], owner=c["owner"], pos=tuple(c["pos"]))
+        int(cid): City(
+            id=c["id"],
+            owner=c["owner"],
+            pos=tuple(c["pos"]),
+            size=c.get("size", 1),
+            claimed={tuple(coord) for coord in c.get("claimed", [c["pos"]])},
+        )
         for cid, c in data["cities"].items()
     }
     players = {int(pid): Player(**p) for pid, p in data["players"].items()}
