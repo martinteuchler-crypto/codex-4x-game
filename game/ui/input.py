@@ -49,6 +49,8 @@ class InputHandler:
             self.hud.set_hover_info(text)
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             x, y = event.pos
+            if y >= state.height * config.TILE_SIZE:
+                return
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
             self.selected = None
             for unit in state.units.values():
