@@ -6,6 +6,8 @@ import pygame
 import pygame_gui
 
 from .. import config
+from ..core import mapgen
+from ..core.models import Player, State
 from .gameplay import Gameplay
 
 
@@ -36,7 +38,28 @@ class Menu:
                     and event.user_type == pygame_gui.UI_BUTTON_PRESSED
                 ):
                     if event.ui_element == self.new:
-                        game = Gameplay(config.START_SIZE, seed=1)
+                        tiles, spawns = mapgen.generate_map(*config.START_SIZE, seed=1)
+                        units = {u.id: u for u in mapgen.initial_units(spawns)}
+                        players = {0: Player(0), 1: Player(1)}
+                        state = State(
+                            width=config.START_SIZE[0],
+                            height=config.START_SIZE[1],
+                            tiles=tiles,
+                            units=units,
+                            cities={},
+                            players=players,
+                        )
+                        for unit in state.units.values():
+                            unit.moves_left = config.UNIT_STATS[unit.kind]["moves"]
+                            for x in range(state.width):
+                                for y in range(state.height):
+                                    if (
+                                        abs(unit.pos[0] - x) + abs(unit.pos[1] - y)
+                                        <= config.REVEAL_RADIUS
+                                    ):
+                                        tile = state.tile_at((x, y))
+                                        tile.revealed_by.add(unit.owner)
+                        game = Gameplay(state)
                         game.run()
                     elif event.ui_element == self.quit:
                         running = False

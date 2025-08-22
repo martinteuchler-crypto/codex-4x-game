@@ -7,8 +7,8 @@ from random import Random
 import pygame
 
 from .. import config
-from ..core import ai, mapgen
-from ..core.models import Player, State
+from ..core import ai
+from ..core.models import State
 from ..core.rules import check_win
 from ..ui.hud import HUD
 from ..ui.input import InputHandler
@@ -16,38 +16,18 @@ from ..ui.renderer import draw
 
 
 class Gameplay:
-    def __init__(self, size: tuple[int, int], seed: int) -> None:
-        tiles, spawns = mapgen.generate_map(*size, seed)
-        units = {u.id: u for u in mapgen.initial_units(spawns)}
-        players = {0: Player(0), 1: Player(1)}
-        self.state = State(
-            width=size[0],
-            height=size[1],
-            tiles=tiles,
-            units=units,
-            cities={},
-            players=players,
-        )
-        for unit in self.state.units.values():
-            unit.moves_left = config.UNIT_STATS[unit.kind]["moves"]
+    def __init__(self, state: State) -> None:
+        self.state = state
         self.screen = pygame.display.get_surface()
         self.hud = HUD(
             pygame.Rect(
                 0,
-                size[1] * config.TILE_SIZE,
-                size[0] * config.TILE_SIZE,
+                state.height * config.TILE_SIZE,
+                state.width * config.TILE_SIZE,
                 config.UI_BAR_H,
             )
         )
         self.input = InputHandler(self.hud)
-        for unit in self.state.units.values():
-            for x in range(self.state.width):
-                for y in range(self.state.height):
-                    if (
-                        abs(unit.pos[0] - x) + abs(unit.pos[1] - y)
-                        <= config.REVEAL_RADIUS
-                    ):
-                        self.state.tile_at((x, y)).revealed_by.add(unit.owner)
 
     def run(self) -> None:
         clock = pygame.time.Clock()
