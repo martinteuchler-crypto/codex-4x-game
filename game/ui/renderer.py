@@ -22,7 +22,12 @@ COLORS = {
 HIGHLIGHT_COLOR = (255, 255, 0)
 
 
-def draw(state: State, surface: pygame.Surface, selected_id: int | None = None) -> None:
+def draw(
+    state: State,
+    surface: pygame.Surface,
+    selected_unit_id: int | None = None,
+    selected_city_id: int | None = None,
+) -> None:
     ts = config.TILE_SIZE
     for tile in state.tiles:
         rect = pygame.Rect(tile.x * ts, tile.y * ts, ts, ts)
@@ -36,8 +41,14 @@ def draw(state: State, surface: pygame.Surface, selected_id: int | None = None) 
     for unit in state.units.values():
         rect = pygame.Rect(unit.pos[0] * ts + 8, unit.pos[1] * ts + 8, ts - 16, ts - 16)
         surface.fill(COLORS[unit.kind], rect)
-    if selected_id is not None and selected_id in state.units:
-        unit = state.units[selected_id]
+    if selected_city_id is not None and selected_city_id in state.cities:
+        city = state.cities[selected_city_id]
+        claimed = getattr(city, "claimed", {city.pos})
+        for coord in claimed:
+            rect = pygame.Rect(coord[0] * ts, coord[1] * ts, ts, ts)
+            pygame.draw.rect(surface, HIGHLIGHT_COLOR, rect, 2)
+    if selected_unit_id is not None and selected_unit_id in state.units:
+        unit = state.units[selected_unit_id]
         tile = state.tile_at(unit.pos)
         if state.current_player in tile.revealed_by:
             rect = pygame.Rect(unit.pos[0] * ts, unit.pos[1] * ts, ts, ts)

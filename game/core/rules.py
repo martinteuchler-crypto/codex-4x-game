@@ -28,6 +28,50 @@ def reveal(state: State, unit: Unit) -> None:
                 state.tile_at((x, y)).revealed_by.add(unit.owner)
 
 
+def grow_city(state: State, city: City, rng: Random) -> bool:
+    """Attempt to grow ``city``.
+
+    Returns ``True`` if the city grew and claimed a new tile, otherwise
+    ``False``. Growth costs ``2 ** city.size`` food. The new tile is chosen
+    among the unclaimed tiles nearest to the city, preferring those with the
+    most already-claimed neighbours. Ties are resolved deterministically using
+    ``rng.choice`` on a sorted list of candidates.
+    """
+
+    player = state.players[city.owner]
+    cost = 2**city.size
+    if player.food < cost:
+        return False
+    # Determine all unclaimed tiles.
+    claimed_tiles = {coord for c in state.cities.values() for coord in c.claimed}
+    unclaimed = [
+        (x, y)
+        for x in range(state.width)
+        for y in range(state.height)
+        if (x, y) not in claimed_tiles
+    ]
+    if not unclaimed:
+        return False
+
+    player.food -= cost
+    city.size += 1
+
+    # Find nearest candidates.
+    min_dist = min(distance(city.pos, c) for c in unclaimed)
+    nearest = [c for c in unclaimed if distance(city.pos, c) == min_dist]
+
+    def neighbour_count(coord: Coord) -> int:
+        x, y = coord
+        neighbours = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+        return sum(1 for n in neighbours if n in city.claimed)
+
+    max_neigh = max(neighbour_count(c) for c in nearest)
+    candidates = [c for c in nearest if neighbour_count(c) == max_neigh]
+    chosen = rng.choice(sorted(candidates))
+    city.claimed.add(chosen)
+    return True
+
+
 def move_unit(state: State, unit_id: int, dest: Coord) -> None:
     unit = state.units[unit_id]
     if unit.owner != state.current_player:
@@ -85,6 +129,7 @@ def end_turn(state: State, rng: Random | None = None) -> None:
             city.food_stock -= 3
             city.size += 1
             claim_adjacent(state, city, rng)
+
     state.current_player = 1 - state.current_player
     state.turn += 1
     for unit in state.units.values():
@@ -93,6 +138,7 @@ def end_turn(state: State, rng: Random | None = None) -> None:
 
 
 def found_city(state: State, unit_id: int, rng: Random | None = None) -> City:
+
     unit = state.units[unit_id]
     if unit.kind != "settler":
         raise RuleError("only settlers can found cities")
@@ -102,12 +148,30 @@ def found_city(state: State, unit_id: int, rng: Random | None = None) -> City:
     if state.city_at(unit.pos):
         raise RuleError("city exists")
     rng = rng or Random()
-    city = City(id=state.next_city_id, owner=unit.owner, pos=unit.pos)
+    city = City(
+        id=state.next_city_id,
+        owner=unit.owner,
+        pos=unit.pos,
+        claimed={unit.pos},
+    )
     city.claimed.add(city.pos)
     claim_adjacent(state, city, rng)
+    
     state.cities[city.id] = city
     state.next_city_id += 1
     del state.units[unit.id]
+    neighbors: list[Coord] = []
+    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+        coord = (city.pos[0] + dx, city.pos[1] + dy)
+        if not in_bounds(state, coord):
+            continue
+        if state.tile_at(coord).kind == "water":
+            continue
+        if any(coord in c.claimed for c in state.cities.values()):
+            continue
+        neighbors.append(coord)
+    if neighbors:
+        city.claimed.add(rng.choice(neighbors))
     return city
 
 
@@ -157,4 +221,5 @@ __all__ = [
     "found_city",
     "buy_unit",
     "check_win",
+    "grow_city",
 ]

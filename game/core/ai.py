@@ -25,7 +25,7 @@ def ai_turn(state: State, rng: Random) -> None:
             except RuleError:
                 continue
         try:
-            found_city(state, unit.id)
+            found_city(state, unit.id, rng)
             return
         except RuleError:
             continue

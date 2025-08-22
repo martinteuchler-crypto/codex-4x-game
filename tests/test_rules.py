@@ -28,7 +28,8 @@ def test_found_city_and_buy_unit():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
-    rules.found_city(state, uid)
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
     cid = next(iter(state.cities))
     state.players[0].prod = 10
     rules.buy_unit(state, cid, "soldier")
@@ -39,7 +40,8 @@ def test_buy_settler_costs_food_and_production():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
-    rules.found_city(state, uid)
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
     cid = next(iter(state.cities))
     player = state.players[0]
     player.food = 2
@@ -54,7 +56,8 @@ def test_win_condition():
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
     state.tile_at((2, 2)).kind = "plains"
-    rules.found_city(state, uid)
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
     cid = next(iter(state.cities))
     state.cities[cid].owner = 1
     assert rules.check_win(state) == 1
@@ -72,7 +75,8 @@ def test_no_win_if_opponent_has_settler():
     )
     state.units[uid].pos = (2, 2)
     state.tile_at((2, 2)).kind = "plains"
-    rules.found_city(state, uid)
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
     assert rules.check_win(state) is None
 
 
@@ -80,7 +84,6 @@ def test_end_turn_without_city():
     state = make_state()
     rules.end_turn(state)
     assert state.current_player == 1
-
 
 def test_city_claims_extra_tile_on_found():
     state = make_state()
@@ -123,3 +126,4 @@ def test_city_yield_sums_claimed_tiles():
     rules.end_turn(state, rng)
     player = state.players[0]
     assert (player.food, player.prod) == (1, 3)
+

@@ -41,11 +41,16 @@ class Gameplay:
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                     running = False
                 else:
-                    self.input.handle_event(event, self.state)
+                    self.input.handle_event(event, self.state, rng)
             if self.state.current_player == 1:
                 ai.ai_turn(self.state, rng)
             self.hud.update(time_delta, self.state)
-            draw(self.state, self.screen, self.input.selected)
+            draw(
+                self.state,
+                self.screen,
+                self.input.selected,
+                self.input.selected_city,
+            )
             self.hud.draw(self.screen)
             pygame.display.flip()
             if check_win(self.state) is not None:

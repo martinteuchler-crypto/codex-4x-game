@@ -34,12 +34,14 @@ class HUD:
             container=self.panel,
             manager=self.manager,
         )
+        # Create the buy-unit menu without the HUD panel as its container so it
+        # can expand over the map area when opened.
         self.buy_unit = pygame_gui.elements.UIDropDownMenu(
             options_list=["Buy Unit", "Buy Scout", "Buy Soldier", "Buy Settler"],
             starting_option="Buy Unit",
-            relative_rect=pygame.Rect(210, 5, 150, 30),
-            container=self.panel,
+            relative_rect=pygame.Rect(self.rect.x + 210, self.rect.y + 5, 150, 30),
             manager=self.manager,
+            anchors={"left": "left", "bottom": "bottom"},
         )
         # Expand upwards so the menu remains fully visible above the HUD
         self.buy_unit.expand_direction = "up"
@@ -115,3 +117,26 @@ class HUD:
         if self.buy_unit.current_state is not None:
             self.buy_unit.current_state.selected_option = self.buy_unit.selected_option
             self.buy_unit.current_state.rebuild()
+            
+    def contains_point(self, pos: tuple[int, int]) -> bool:
+        """Return True if ``pos`` is over any HUD element.
+
+        Includes the expanded buy-unit menu which may overlap the map area.
+        """
+        if self.rect.collidepoint(pos) or self.buy_unit.rect.collidepoint(pos):
+            return True
+        state = self.buy_unit.current_state
+        if state is not None:
+            if (
+                state.selected_option_button
+                and state.selected_option_button.rect.collidepoint(pos)
+            ):
+                return True
+            if (
+                state.options_selection_list
+                and state.options_selection_list.rect.collidepoint(pos)
+            ):
+                return True
+            if state.close_button and state.close_button.rect.collidepoint(pos):
+                return True
+        return False
