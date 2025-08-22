@@ -39,7 +39,9 @@ class HUD:
             manager=self.manager,
         )
         self.context = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(rect.width - 210, 10, 200, 40),
+            relative_rect=pygame.Rect(
+                rect.width - 210, rect.height - 50, 200, 40
+            ),
             text="",
             manager=self.manager,
         )
