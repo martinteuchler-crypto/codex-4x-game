@@ -47,9 +47,10 @@ class HUD:
         self.manager.process_events(event)
 
     def update(self, time_delta: float, state: State) -> None:
+        player = state.players[state.current_player]
         self.info.set_text(
             f"Turn {state.turn} Player {state.current_player} "
-            f"F:{state.players[0].food} P:{state.players[0].prod}"
+            f"F:{player.food} P:{player.prod}"
         )
         self.manager.update(time_delta)
 
