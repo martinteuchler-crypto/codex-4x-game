@@ -36,6 +36,11 @@ class HUD:
             text="",
             manager=self.manager,
         )
+        self.context = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(rect.width - 210, 10, 200, 40),
+            text="",
+            manager=self.manager,
+        )
 
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
@@ -49,3 +54,7 @@ class HUD:
 
     def draw(self, surface: pygame.Surface) -> None:
         self.manager.draw_ui(surface)
+
+    def set_context(self, text: str) -> None:
+        """Update the context info label."""
+        self.context.set_text(text)

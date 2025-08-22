@@ -18,7 +18,27 @@ class InputHandler:
 
     def handle_event(self, event: pygame.event.Event, state: State) -> None:
         self.hud.process_event(event)
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if event.type == pygame.MOUSEMOTION:
+            x, y = event.pos
+            tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
+            context = ""
+            if 0 <= tile[0] < state.width and 0 <= tile[1] < state.height:
+                for unit in state.units.values():
+                    if unit.pos == tile:
+                        context = f"{unit.kind.title()} (Player {unit.owner})"
+                        break
+                else:
+                    for city in state.cities.values():
+                        if city.pos == tile:
+                            context = f"City (Player {city.owner})"
+                            break
+                    else:
+                        tile_obj = state.tile_at(tile)
+                        if state.current_player in tile_obj.revealed_by:
+                            food, prod = config.YIELD[tile_obj.kind]
+                            context = f"{tile_obj.kind.title()} F{food} P{prod}"
+            self.hud.set_context(context)
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             x, y = event.pos
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
             for unit in state.units.values():

@@ -19,7 +19,15 @@ COLORS = {
 }
 
 
-def draw(state: State, surface: pygame.Surface) -> None:
+def draw(state: State, surface: pygame.Surface, selected: int | None = None) -> None:
+    """Draw the current game state.
+
+    Args:
+        state: Current game state.
+        surface: Surface to draw on.
+        selected: Optional ID of the selected unit to highlight.
+    """
+
     ts = config.TILE_SIZE
     for tile in state.tiles:
         rect = pygame.Rect(tile.x * ts, tile.y * ts, ts, ts)
@@ -33,3 +41,6 @@ def draw(state: State, surface: pygame.Surface) -> None:
     for unit in state.units.values():
         rect = pygame.Rect(unit.pos[0] * ts + 8, unit.pos[1] * ts + 8, ts - 16, ts - 16)
         surface.fill(COLORS[unit.kind], rect)
+        if selected is not None and unit.id == selected:
+            sel_rect = pygame.Rect(unit.pos[0] * ts, unit.pos[1] * ts, ts, ts)
+            pygame.draw.rect(surface, (255, 255, 0), sel_rect, 3)
