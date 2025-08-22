@@ -111,8 +111,9 @@ def end_turn(state: State, rng: Random | None = None) -> None:
         player.food += total_food
         player.prod += total_prod
         city.food_stock += total_food
-        while city.food_stock >= 3:
+        while city.food_stock >= 3 and player.food >= 3:
             city.food_stock -= 3
+            player.food -= 3
             city.size += 1
             claim_best_tile(state, city, rng)
 
