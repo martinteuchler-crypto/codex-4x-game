@@ -16,7 +16,7 @@ def test_movement_cost_and_fog():
     uid = next(iter(state.units))
     dest = (state.units[uid].pos[0] + 1, state.units[uid].pos[1])
     rules.move_unit(state, uid, dest)
-    assert state.units[uid].moves_left < config.UNIT_STATS["scout"]["moves"]
+    assert state.units[uid].moves_left < config.UNIT_STATS["settler"]["moves"]
     tile = state.tile_at(dest)
     assert state.current_player in tile.revealed_by
 
