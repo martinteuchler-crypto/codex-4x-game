@@ -18,6 +18,7 @@ class InputHandler:
         self.hud.found_city.disable()
         self.hud.end_turn.disable()
         self.hud.show_hint("Found a city to end your turn")
+        self.hud.hide_message()
 
     def handle_event(self, event: pygame.event.Event, state: State) -> None:
         self.hud.process_event(event)
@@ -46,15 +47,20 @@ class InputHandler:
                 dest = (x // config.TILE_SIZE, y // config.TILE_SIZE)
                 try:
                     rules.move_unit(state, self.selected, dest)
-                except (rules.RuleError, KeyError):
-                    pass
+                    self.hud.hide_message()
+                except rules.RuleError as e:
+                    self.hud.show_message(str(e))
+                except KeyError:
+                    self.hud.show_message("Cannot move there")
             else:
                 self.selected = None
                 self.hud.found_city.disable()
+                self.hud.show_message("No unit selected")
         elif event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.hud.end_turn:
                     rules.end_turn(state)
+                    self.hud.hide_message()
                 elif (
                     event.ui_element == self.hud.found_city
                     and self.selected is not None
@@ -65,7 +71,13 @@ class InputHandler:
                         rules.found_city(state, self.selected)
                         self.selected = None
                         self.hud.found_city.disable()
-                    except (rules.RuleError, KeyError):
+                        self.hud.hide_message()
+                    except rules.RuleError as e:
+                        self.hud.show_message(str(e))
+                        self.selected = None
+                        self.hud.found_city.disable()
+                    except KeyError:
+                        self.hud.show_message("Cannot found city")
                         self.selected = None
                         self.hud.found_city.disable()
 
@@ -74,14 +86,20 @@ class InputHandler:
                         if city.owner == state.current_player:
                             try:
                                 rules.buy_unit(state, city.id, "scout")
-                            except (rules.RuleError, KeyError):
-                                pass
+                                self.hud.hide_message()
+                            except rules.RuleError as e:
+                                self.hud.show_message(str(e))
+                            except KeyError:
+                                self.hud.show_message("Cannot buy unit")
                             break
                 elif event.ui_element == self.hud.buy_soldier:
                     for city in state.cities.values():
                         if city.owner == state.current_player:
                             try:
                                 rules.buy_unit(state, city.id, "soldier")
-                            except (rules.RuleError, KeyError):
-                                pass
+                                self.hud.hide_message()
+                            except rules.RuleError as e:
+                                self.hud.show_message(str(e))
+                            except KeyError:
+                                self.hud.show_message("Cannot buy unit")
                             break
