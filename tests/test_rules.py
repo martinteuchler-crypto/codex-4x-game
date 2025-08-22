@@ -1,3 +1,5 @@
+from random import Random
+
 from game import config
 from game.core import mapgen, rules
 from game.core.models import Player, State
@@ -78,3 +80,46 @@ def test_end_turn_without_city():
     state = make_state()
     rules.end_turn(state)
     assert state.current_player == 1
+
+
+def test_city_claims_extra_tile_on_found():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    state.tile_at((2, 2)).kind = "plains"
+    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+        state.tile_at((2 + dx, 2 + dy)).kind = "plains"
+    rng = Random(0)
+    city = rules.found_city(state, uid, rng)
+    assert city.claimed == {(2, 2), (2, 1)}
+
+
+def test_city_grows_and_claims_new_tile():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    state.tile_at((2, 2)).kind = "plains"
+    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+        state.tile_at((2 + dx, 2 + dy)).kind = "plains"
+    rng = Random(0)
+    city = rules.found_city(state, uid, rng)
+    rules.end_turn(state, rng)
+    rules.end_turn(state, rng)
+    assert city.size == 2
+    assert city.claimed == {(2, 2), (2, 1), (1, 2)}
+
+
+def test_city_yield_sums_claimed_tiles():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    state.tile_at((2, 2)).kind = "plains"
+    state.tile_at((2, 1)).kind = "forest"
+    state.tile_at((1, 2)).kind = "plains"
+    state.tile_at((3, 2)).kind = "plains"
+    state.tile_at((2, 3)).kind = "plains"
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
+    rules.end_turn(state, rng)
+    player = state.players[0]
+    assert (player.food, player.prod) == (1, 3)

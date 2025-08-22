@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from random import Random
+
 from .. import config
 from .models import City, Coord, State, Unit
 
@@ -49,12 +51,40 @@ def move_unit(state: State, unit_id: int, dest: Coord) -> None:
         city.owner = unit.owner
 
 
-def end_turn(state: State) -> None:
+def claim_adjacent(state: State, city: City, rng: Random) -> None:
+    x, y = city.pos
+    candidates: list[Coord] = []
+    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+        coord = (x + dx, y + dy)
+        if not in_bounds(state, coord):
+            continue
+        tile = state.tile_at(coord)
+        if tile.kind == "water" or coord in city.claimed:
+            continue
+        candidates.append(coord)
+    if candidates:
+        city.claimed.add(rng.choice(candidates))
+
+
+def end_turn(state: State, rng: Random | None = None) -> None:
+    rng = rng or Random()
     for city in state.cities.values():
-        food, prod = config.YIELD[state.tile_at(city.pos).kind]
+        total_food = 0
+        total_prod = 0
+        if not city.claimed:
+            city.claimed.add(city.pos)
+        for coord in city.claimed:
+            food, prod = config.YIELD[state.tile_at(coord).kind]
+            total_food += food
+            total_prod += prod
         player = state.players[city.owner]
-        player.food += food
-        player.prod += prod
+        player.food += total_food
+        player.prod += total_prod
+        city.food_stock += total_food
+        while city.food_stock >= 3:
+            city.food_stock -= 3
+            city.size += 1
+            claim_adjacent(state, city, rng)
     state.current_player = 1 - state.current_player
     state.turn += 1
     for unit in state.units.values():
@@ -62,7 +92,7 @@ def end_turn(state: State) -> None:
             unit.moves_left = config.UNIT_STATS[unit.kind]["moves"]
 
 
-def found_city(state: State, unit_id: int) -> City:
+def found_city(state: State, unit_id: int, rng: Random | None = None) -> City:
     unit = state.units[unit_id]
     if unit.kind != "settler":
         raise RuleError("only settlers can found cities")
@@ -71,7 +101,10 @@ def found_city(state: State, unit_id: int) -> City:
         raise RuleError("cannot found on water")
     if state.city_at(unit.pos):
         raise RuleError("city exists")
+    rng = rng or Random()
     city = City(id=state.next_city_id, owner=unit.owner, pos=unit.pos)
+    city.claimed.add(city.pos)
+    claim_adjacent(state, city, rng)
     state.cities[city.id] = city
     state.next_city_id += 1
     del state.units[unit.id]
