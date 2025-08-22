@@ -117,7 +117,7 @@ class HUD:
         if self.buy_unit.current_state is not None:
             self.buy_unit.current_state.selected_option = self.buy_unit.selected_option
             self.buy_unit.current_state.rebuild()
-            
+
     def contains_point(self, pos: tuple[int, int]) -> bool:
         """Return True if ``pos`` is over any HUD element.
 
@@ -127,16 +127,13 @@ class HUD:
             return True
         state = self.buy_unit.current_state
         if state is not None:
-            if (
-                state.selected_option_button
-                and state.selected_option_button.rect.collidepoint(pos)
-            ):
+            selected_button = getattr(state, "selected_option_button", None)
+            if selected_button and selected_button.rect.collidepoint(pos):
                 return True
-            if (
-                state.options_selection_list
-                and state.options_selection_list.rect.collidepoint(pos)
-            ):
+            options_list = getattr(state, "options_selection_list", None)
+            if options_list and options_list.rect.collidepoint(pos):
                 return True
-            if state.close_button and state.close_button.rect.collidepoint(pos):
+            close_button = getattr(state, "close_button", None)
+            if close_button and close_button.rect.collidepoint(pos):
                 return True
         return False
