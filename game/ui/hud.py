@@ -117,7 +117,7 @@ class HUD:
         if self.buy_unit.current_state is not None:
             self.buy_unit.current_state.selected_option = self.buy_unit.selected_option
             self.buy_unit.current_state.rebuild()
-
+            
     def contains_point(self, pos: tuple[int, int]) -> bool:
         """Return True if ``pos`` is over any HUD element.
 
