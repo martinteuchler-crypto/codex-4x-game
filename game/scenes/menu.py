@@ -49,6 +49,7 @@ class Menu:
                             cities={},
                             players=players,
                         )
+                        state.next_unit_id = max(units) + 1
                         for unit in state.units.values():
                             unit.moves_left = config.UNIT_STATS[unit.kind]["moves"]
                             for x in range(state.width):

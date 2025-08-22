@@ -8,12 +8,13 @@ def make_state() -> State:
     units = {u.id: u for u in mapgen.initial_units(spawns)}
     players = {0: Player(0), 1: Player(1)}
     state = State(5, 5, tiles, units, {}, players)
+    state.next_unit_id = max(units) + 1
     return state
 
 
 def test_movement_cost_and_fog():
     state = make_state()
-    uid = next(iter(state.units))
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     dest = (state.units[uid].pos[0] + 1, state.units[uid].pos[1])
     rules.move_unit(state, uid, dest)
     assert state.units[uid].moves_left < config.UNIT_STATS["scout"]["moves"]
@@ -23,7 +24,7 @@ def test_movement_cost_and_fog():
 
 def test_found_city_and_buy_unit():
     state = make_state()
-    uid = next(iter(state.units))
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
     rules.found_city(state, uid)
     cid = next(iter(state.cities))
@@ -34,7 +35,7 @@ def test_found_city_and_buy_unit():
 
 def test_win_condition():
     state = make_state()
-    uid = next(iter(state.units))
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
     rules.found_city(state, uid)
     cid = next(iter(state.cities))

@@ -9,6 +9,7 @@ def make_state() -> State:
     units = {u.id: u for u in mapgen.initial_units(spawns)}
     players = {0: Player(0), 1: Player(1)}
     state = State(5, 5, tiles, units, {}, players)
+    state.next_unit_id = max(units) + 1
     return state
 
 

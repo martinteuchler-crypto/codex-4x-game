@@ -33,16 +33,28 @@ def generate_map(w: int, h: int, seed: int) -> Tuple[List[Tile], List[Tuple[int,
 
 def initial_units(spawns: List[Tuple[int, int]]) -> List[Unit]:
     units: List[Unit] = []
-    for i, pos in enumerate(spawns):
+    uid = 1
+    for owner, pos in enumerate(spawns):
         units.append(
             Unit(
-                id=i + 1,
-                owner=i,
+                id=uid,
+                owner=owner,
+                kind="settler",
+                pos=pos,
+                moves_left=config.UNIT_STATS["settler"]["moves"],
+            )
+        )
+        uid += 1
+        units.append(
+            Unit(
+                id=uid,
+                owner=owner,
                 kind="scout",
                 pos=pos,
                 moves_left=config.UNIT_STATS["scout"]["moves"],
             )
         )
+        uid += 1
     return units
 
 
