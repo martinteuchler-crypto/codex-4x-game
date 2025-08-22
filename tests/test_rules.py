@@ -46,3 +46,13 @@ def test_win_condition():
 def test_no_win_without_cities():
     state = make_state()
     assert rules.check_win(state) is None
+
+
+def test_found_city_on_start_tile():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    start = state.units[uid].pos
+    assert state.tile_at(start).kind == "plains"
+    rules.found_city(state, uid)
+    assert any(c.pos == start for c in state.cities.values())
+    assert uid not in state.units

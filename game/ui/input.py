@@ -21,19 +21,20 @@ class InputHandler:
         self.hud.process_event(event)
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             x, y = event.pos
-            tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
-            self.selected = None
-            for unit in state.units.values():
-                if unit.pos == tile and unit.owner == state.current_player:
-                    self.selected = unit.id
-                    break
-            if (
-                self.selected is not None
-                and state.units[self.selected].kind == "settler"
-            ):
-                self.hud.found_city.enable()
-            else:
-                self.hud.found_city.disable()
+            if y >= config.UI_BAR_H:
+                tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
+                self.selected = None
+                for unit in state.units.values():
+                    if unit.pos == tile and unit.owner == state.current_player:
+                        self.selected = unit.id
+                        break
+                if (
+                    self.selected is not None
+                    and state.units[self.selected].kind == "settler"
+                ):
+                    self.hud.found_city.enable()
+                else:
+                    self.hud.found_city.disable()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
             if self.selected is not None:
                 x, y = event.pos
