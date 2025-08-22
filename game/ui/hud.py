@@ -31,11 +31,21 @@ class HUD:
             text="Buy Soldier",
             manager=self.manager,
         )
+        remaining = rect.width - 430
+        info_width = max((remaining // 2) - 5, 50)
+        hover_x = 430 + info_width + 10
+        hover_width = rect.width - hover_x - 10
         self.info = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(430, 10, 200, 40),
+            relative_rect=pygame.Rect(430, 10, info_width, 40),
             text="",
             manager=self.manager,
         )
+        self.hover_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(hover_x, 10, hover_width, 40),
+            text="",
+            manager=self.manager,
+        )
+        self.hover_text: str = ""
 
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
@@ -45,7 +55,12 @@ class HUD:
             f"Turn {state.turn} Player {state.current_player} "
             f"F:{state.players[0].food} P:{state.players[0].prod}"
         )
+        self.hover_label.set_text(self.hover_text)
         self.manager.update(time_delta)
+
+    def set_hover(self, text: str) -> None:
+        self.hover_text = text
+        self.hover_label.set_text(text)
 
     def draw(self, surface: pygame.Surface) -> None:
         self.manager.draw_ui(surface)
