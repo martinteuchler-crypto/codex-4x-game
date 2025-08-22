@@ -1,3 +1,5 @@
+from random import Random
+
 from game import config
 from game.core import mapgen, rules
 from game.core.models import Player, State
@@ -26,7 +28,8 @@ def test_found_city_and_buy_unit():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
-    rules.found_city(state, uid)
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
     cid = next(iter(state.cities))
     state.players[0].prod = 10
     rules.buy_unit(state, cid, "soldier")
@@ -37,7 +40,8 @@ def test_buy_settler_costs_food_and_production():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
-    rules.found_city(state, uid)
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
     cid = next(iter(state.cities))
     player = state.players[0]
     player.food = 2
@@ -52,7 +56,8 @@ def test_win_condition():
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
     state.tile_at((2, 2)).kind = "plains"
-    rules.found_city(state, uid)
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
     cid = next(iter(state.cities))
     state.cities[cid].owner = 1
     assert rules.check_win(state) == 1
@@ -70,7 +75,8 @@ def test_no_win_if_opponent_has_settler():
     )
     state.units[uid].pos = (2, 2)
     state.tile_at((2, 2)).kind = "plains"
-    rules.found_city(state, uid)
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
     assert rules.check_win(state) is None
 
 
