@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import pygame
 
+from . import config
 from .scenes.menu import Menu
 
 
 def main() -> None:
     pygame.init()
-    size = (640, 480)
-    pygame.display.set_mode(size)
+    size = config.MIN_WINDOW
+    pygame.display.set_mode(size, pygame.RESIZABLE)
     Menu().run()
     pygame.quit()
 

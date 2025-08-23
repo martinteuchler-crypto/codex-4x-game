@@ -14,3 +14,14 @@ UNIT_STATS = {
 }
 REVEAL_RADIUS = 3
 START_SIZE = (20, 12)
+
+# Window size limits
+MIN_WINDOW = (640, 480)
+MAX_WINDOW = (1920, 1280)
+
+
+def clamp_window_size(size: tuple[int, int]) -> tuple[int, int]:
+    """Clamp ``size`` to the allowed window bounds."""
+    width = max(MIN_WINDOW[0], min(size[0], MAX_WINDOW[0]))
+    height = max(MIN_WINDOW[1], min(size[1], MAX_WINDOW[1]))
+    return width, height

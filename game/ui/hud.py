@@ -75,6 +75,18 @@ class HUD:
         self.message.hide()
         self._message_timer: float | None = None
 
+    def resize(self, size: tuple[int, int]) -> None:
+        """Resize HUD elements to match the new window ``size``."""
+        self.rect.y = size[1] - self.rect.height
+        self.rect.width = size[0]
+        self.manager.set_window_resolution(size)
+        self.panel.set_relative_position(self.rect.topleft)
+        self.panel.set_dimensions((self.rect.width, self.rect.height))
+        self.buy_unit.set_relative_position((210, self.rect.y + 5))
+        self.hover_info.set_relative_position(
+            (self.rect.width - 210, self.rect.height - 30)
+        )
+
     def process_event(self, event: pygame.event.Event) -> None:
         self.manager.process_events(event)
 
