@@ -46,9 +46,18 @@ def draw(
             text = FONT.render(str(city.size), True, (0, 0, 0))
             text_rect = text.get_rect(center=rect.center)
             surface.blit(text, text_rect)
+    soldier_counts: dict[tuple[int, int], int] = {}
     for unit in state.units.values():
         rect = pygame.Rect(unit.pos[0] * ts + 8, unit.pos[1] * ts + 8, ts - 16, ts - 16)
         surface.fill(COLORS[unit.kind], rect)
+        if unit.kind == "soldier":
+            soldier_counts[unit.pos] = soldier_counts.get(unit.pos, 0) + 1
+    for coord, count in soldier_counts.items():
+        rect = pygame.Rect(coord[0] * ts, coord[1] * ts, ts, ts)
+        if FONT:
+            text = FONT.render(f"#{count}", True, (0, 0, 0))
+            text_rect = text.get_rect(center=rect.center)
+            surface.blit(text, text_rect)
     if selected_city_id is not None and selected_city_id in state.cities:
         city = state.cities[selected_city_id]
         claimed = getattr(city, "claimed", {city.pos})

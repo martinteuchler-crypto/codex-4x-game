@@ -51,7 +51,21 @@ def test_found_city_and_buy_unit():
     assert any(u.kind == "soldier" for u in state.units.values())
 
 
-def test_buy_settler_requires_size_and_reduces_city():
+def test_can_stack_soldiers_on_city_tile():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
+    cid = next(iter(state.cities))
+    state.players[0].prod = 10
+    rules.buy_unit(state, cid, "soldier")
+    rules.buy_unit(state, cid, "soldier")
+    soldiers = [u for u in state.units.values() if u.kind == "soldier"]
+    assert len(soldiers) == 2 and soldiers[0].pos == soldiers[1].pos
+
+
+def test_buy_settler_costs_food_and_production():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
     state.units[uid].pos = (2, 2)
