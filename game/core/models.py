@@ -14,6 +14,7 @@ class Tile:
     y: int
     kind: str  # 'plains' | 'forest' | 'hill' | 'water'
     revealed_by: Set[int] = field(default_factory=set)
+    improvements: Set[str] = field(default_factory=set)
 
 
 @dataclass
@@ -32,6 +33,7 @@ class City:
     pos: Coord
     size: int = 1
     claimed: Set[Coord] = field(default_factory=set)
+    focus: str = "food"
 
     def claim(self, coord: Coord) -> None:
         """Add a coordinate to the city's claimed tiles."""

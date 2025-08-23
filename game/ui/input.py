@@ -20,6 +20,7 @@ class InputHandler:
         self.selected_city: int | None = None
         self.hud.found_city.disable()
         self.hud.buy_unit.disable()
+        self.hud.focus.disable()
         self.hud.hide_message()
 
     def handle_event(
@@ -35,6 +36,7 @@ class InputHandler:
         ):
             self.selected_city = None
             self.hud.buy_unit.disable()
+            self.hud.focus.disable()
         if event.type == pygame.MOUSEMOTION:
             x, y = event.pos
             # Ignore motion outside the map area or over the HUD (including the
@@ -108,6 +110,7 @@ class InputHandler:
             self.selected = None
             self.selected_city = None
             self.hud.buy_unit.disable()
+            self.hud.focus.disable()
             for unit in state.units.values():
                 if unit.pos == tile and unit.owner == state.current_player:
                     self.selected = unit.id
@@ -124,6 +127,12 @@ class InputHandler:
                 if city and city.owner == state.current_player:
                     self.selected_city = city.id
                     self.hud.buy_unit.enable()
+                    self.hud.focus.enable()
+                    self.hud.set_focus_option(
+                        "Food" if city.focus == "food" else "Production"
+                    )
+                else:
+                    self.hud.focus.disable()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
             x, y = event.pos
             map_rect = pygame.Rect(
@@ -169,6 +178,22 @@ class InputHandler:
                     self.hud.show_message(str(e))
                 except KeyError:
                     self.hud.show_message("Cannot move there")
+            elif (
+                self.selected is not None
+                and self.selected in state.units
+                and event.key in {pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4}
+            ):
+                kind = {
+                    pygame.K_1: "farm",
+                    pygame.K_2: "mine",
+                    pygame.K_3: "saw",
+                    pygame.K_4: "road",
+                }[event.key]
+                try:
+                    rules.build_infrastructure(state, self.selected, kind)
+                    self.hud.hide_message()
+                except rules.RuleError as e:
+                    self.hud.show_message(str(e))
             elif (
                 event.key == pygame.K_f
                 and self.selected is not None
@@ -235,6 +260,7 @@ class InputHandler:
                         self.selected_city = None
                         self.hud.found_city.disable()
                         self.hud.buy_unit.disable()
+                        self.hud.focus.disable()
             elif (
                 event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED
                 and event.ui_element == self.hud.buy_unit
@@ -249,3 +275,10 @@ class InputHandler:
                     except KeyError:
                         self.hud.show_message("Cannot buy unit")
                 self.hud.reset_buy_unit()
+            elif (
+                event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED
+                and event.ui_element == self.hud.focus
+                and self.selected_city is not None
+            ):
+                city = state.cities[self.selected_city]
+                city.focus = "food" if event.text == "Food" else "prod"
