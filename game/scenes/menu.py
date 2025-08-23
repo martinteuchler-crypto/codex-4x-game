@@ -13,17 +13,25 @@ from .gameplay import Gameplay
 
 class Menu:
     def __init__(self) -> None:
-        self.manager = pygame_gui.UIManager((640, 480))
+        size = pygame.display.get_surface().get_size()
+        self.manager = pygame_gui.UIManager(size)
         self.new = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(270, 150, 100, 50),
+            relative_rect=pygame.Rect(0, 0, 100, 50),
             text="New Game",
             manager=self.manager,
         )
         self.quit = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(270, 220, 100, 50),
+            relative_rect=pygame.Rect(0, 0, 100, 50),
             text="Quit",
             manager=self.manager,
         )
+        self._layout(size)
+
+    def _layout(self, size: tuple[int, int]) -> None:
+        center_x = size[0] // 2 - 50
+        center_y = size[1] // 2
+        self.new.set_relative_position((center_x, center_y - 60))
+        self.quit.set_relative_position((center_x, center_y + 10))
 
     def run(self) -> None:
         clock = pygame.time.Clock()
@@ -33,6 +41,11 @@ class Menu:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.VIDEORESIZE:
+                    new_size = config.clamp_window_size((event.w, event.h))
+                    pygame.display.set_mode(new_size, pygame.RESIZABLE)
+                    self.manager.set_window_resolution(new_size)
+                    self._layout(new_size)
                 elif (
                     event.type == pygame.USEREVENT
                     and event.user_type == pygame_gui.UI_BUTTON_PRESSED

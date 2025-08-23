@@ -19,14 +19,9 @@ class Gameplay:
     def __init__(self, state: State) -> None:
         self.state = state
         self.screen = pygame.display.get_surface()
-        self.hud = HUD(
-            pygame.Rect(
-                0,
-                state.height * config.TILE_SIZE,
-                state.width * config.TILE_SIZE,
-                config.UI_BAR_H,
-            )
-        )
+        size = self.screen.get_size()
+        hud_rect = pygame.Rect(0, size[1] - config.UI_BAR_H, size[0], config.UI_BAR_H)
+        self.hud = HUD(hud_rect)
         self.input = InputHandler(self.hud)
 
     def run(self) -> None:
@@ -38,6 +33,11 @@ class Gameplay:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.VIDEORESIZE:
+                    new_size = config.clamp_window_size((event.w, event.h))
+                    pygame.display.set_mode(new_size, pygame.RESIZABLE)
+                    self.screen = pygame.display.get_surface()
+                    self.hud.resize(new_size)
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                     running = False
                 else:
