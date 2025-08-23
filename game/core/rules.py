@@ -161,6 +161,8 @@ def buy_unit(state: State, city_id: int, kind: str) -> Unit:
     city = state.cities[city_id]
     if city.owner != state.current_player:
         raise RuleError("not your city")
+    if kind == "settler" and city.size < 2:
+        raise RuleError("city too small")
     stats = config.UNIT_STATS[kind]
     cost_food = stats.get("food", 0)
     cost_prod = stats.get("prod", 0)
@@ -174,6 +176,8 @@ def buy_unit(state: State, city_id: int, kind: str) -> Unit:
         raise RuleError("tile occupied")
     player.food -= cost_food
     player.prod -= cost_prod
+    if kind == "settler":
+        city.size -= 1
     unit = Unit(
         id=state.next_unit_id,
         owner=city.owner,
