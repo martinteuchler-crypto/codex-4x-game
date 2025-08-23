@@ -14,7 +14,13 @@ def state_to_dict(state: State) -> Dict[str, Any]:
         "width": state.width,
         "height": state.height,
         "tiles": [
-            {"x": t.x, "y": t.y, "kind": t.kind, "revealed_by": list(t.revealed_by)}
+            {
+                "x": t.x,
+                "y": t.y,
+                "kind": t.kind,
+                "revealed_by": list(t.revealed_by),
+                "improvements": list(t.improvements),
+            }
             for t in state.tiles
         ],
         "units": {
@@ -32,9 +38,9 @@ def state_to_dict(state: State) -> Dict[str, Any]:
                 "id": c.id,
                 "owner": c.owner,
                 "pos": list(c.pos),
-                "size": [list(s) for s in sorted(c.size)],
+                "size": c.size,
                 "claimed": [list(s) for s in sorted(c.claimed)],
-
+                "focus": c.focus,
             }
             for cid, c in state.cities.items()
         },
@@ -51,7 +57,13 @@ def state_to_dict(state: State) -> Dict[str, Any]:
 
 def dict_to_state(data: Dict[str, Any]) -> State:
     tiles = [
-        Tile(x=t["x"], y=t["y"], kind=t["kind"], revealed_by=set(t["revealed_by"]))
+        Tile(
+            x=t["x"],
+            y=t["y"],
+            kind=t["kind"],
+            revealed_by=set(t["revealed_by"]),
+            improvements=set(t.get("improvements", [])),
+        )
         for t in data["tiles"]
     ]
     units = {
@@ -69,8 +81,9 @@ def dict_to_state(data: Dict[str, Any]) -> State:
             id=c["id"],
             owner=c["owner"],
             pos=tuple(c["pos"]),
-            size={tuple(s) for s in c.get("size", [])},
+            size=c.get("size", 1),
             claimed={tuple(s) for s in c.get("claimed", [])},
+            focus=c.get("focus", "food"),
         )
         for cid, c in data["cities"].items()
     }

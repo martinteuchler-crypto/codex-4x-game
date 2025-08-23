@@ -28,6 +28,24 @@ def reveal(state: State, unit: Unit) -> None:
                 state.tile_at((x, y)).revealed_by.add(unit.owner)
 
 
+def tile_yield(state: State, coord: Coord) -> tuple[int, int]:
+    tile = state.tile_at(coord)
+    food, prod = config.YIELD[tile.kind]
+    if "farm" in tile.improvements:
+        food += 1
+        if "road" in tile.improvements:
+            food += 1
+    if "mine" in tile.improvements:
+        prod += 1
+        if "road" in tile.improvements:
+            prod += 1
+    if "saw" in tile.improvements:
+        prod += 1
+        if "road" in tile.improvements:
+            prod += 1
+    return food, prod
+
+
 def grow_city(state: State, city: City, rng: Random) -> bool:
     """Attempt to grow ``city``.
 
@@ -65,6 +83,8 @@ def move_unit(state: State, unit_id: int, dest: Coord) -> None:
         raise RuleError("must move to adjacent tile")
     tile = state.tile_at(dest)
     cost = config.MOVE_COST[tile.kind]
+    if "road" in tile.improvements:
+        cost = max(1, cost // 2)
     if cost > unit.moves_left:
         raise RuleError("not enough moves")
     unit.pos = dest
@@ -78,6 +98,45 @@ def move_unit(state: State, unit_id: int, dest: Coord) -> None:
     city = state.city_at(dest)
     if city and city.owner != unit.owner and unit.kind == "soldier":
         city.owner = unit.owner
+
+
+def build_infrastructure(state: State, unit_id: int, kind: str) -> None:
+    unit = state.units[unit_id]
+    if unit.owner != state.current_player:
+        raise RuleError("not your unit")
+    tile = state.tile_at(unit.pos)
+    # Tile must be claimed by a city of the unit's owner
+    owned_city = None
+    for city in state.cities.values():
+        if unit.pos in city.claimed and city.owner == unit.owner:
+            owned_city = city
+            break
+    if owned_city is None:
+        raise RuleError("tile not claimed")
+    if kind == "farm":
+        if tile.kind != "plains":
+            raise RuleError("farms only on plains")
+        if any(i in tile.improvements for i in {"farm", "mine", "saw"}):
+            raise RuleError("infrastructure exists")
+        tile.improvements.add("farm")
+    elif kind == "mine":
+        if tile.kind != "hill":
+            raise RuleError("mines only on hills")
+        if any(i in tile.improvements for i in {"farm", "mine", "saw"}):
+            raise RuleError("infrastructure exists")
+        tile.improvements.add("mine")
+    elif kind == "saw":
+        if tile.kind != "forest":
+            raise RuleError("saws only in forest")
+        if any(i in tile.improvements for i in {"farm", "mine", "saw"}):
+            raise RuleError("infrastructure exists")
+        tile.improvements.add("saw")
+    elif kind == "road":
+        if tile.kind == "water":
+            raise RuleError("cannot build road on water")
+        tile.improvements.add("road")
+    else:
+        raise RuleError("unknown infrastructure")
 
 
 def claim_best_tile(state: State, city: City, rng: Random) -> bool:
@@ -112,10 +171,18 @@ def end_turn(state: State, rng: Random | None = None) -> None:
         if not city.claimed:
             city.claimed.add(city.pos)
         grow_city(state, city, rng)
+        tiles = list(city.claimed)
+        focus_idx = 0 if city.focus == "food" else 1
+        tiles.sort(
+            key=lambda c: tile_yield(state, c)[focus_idx],
+            reverse=True,
+        )
+        limit = min(len(tiles), city.size + 1)
+        selected = tiles[:limit]
         total_food = 0
         total_prod = 0
-        for coord in city.claimed:
-            food, prod = config.YIELD[state.tile_at(coord).kind]
+        for coord in selected:
+            food, prod = tile_yield(state, coord)
             total_food += food
             total_prod += prod
         player = state.players[city.owner]
@@ -211,4 +278,6 @@ __all__ = [
     "buy_unit",
     "check_win",
     "grow_city",
+    "build_infrastructure",
+    "tile_yield",
 ]

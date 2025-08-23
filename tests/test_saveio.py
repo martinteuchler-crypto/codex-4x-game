@@ -8,12 +8,14 @@ def make_state() -> State:
     tiles, spawns = mapgen.generate_map(5, 5, seed=3)
     units = {u.id: u for u in mapgen.initial_units(spawns)}
     players = {0: Player(0), 1: Player(1)}
+    tiles[0].improvements.update({"farm", "road"})
     city = City(
         id=1,
         owner=0,
         pos=(2, 2),
-        size={(2, 2), (3, 2)},
+        size=1,
         claimed={(2, 2), (2, 3)},
+        focus="prod",
     )
     state = State(5, 5, tiles, units, {city.id: city}, players)
     state.next_unit_id = max(units) + 1

@@ -178,3 +178,57 @@ def test_city_can_claim_water_tile():
     rules.end_turn(state, rng)
     player = state.players[0]
     assert (player.food, player.prod) == (2, 1)
+
+
+def test_build_infrastructure_and_road_yield():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    state.tile_at((2, 2)).kind = "plains"
+    state.tile_at((3, 2)).kind = "plains"
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
+    scout_id = next(
+        uid for uid, u in state.units.items() if u.kind == "scout" and u.owner == 0
+    )
+    state.units[scout_id].pos = (2, 2)
+    rules.build_infrastructure(state, scout_id, "farm")
+    rules.build_infrastructure(state, scout_id, "road")
+    rules.end_turn(state, rng)
+    player = state.players[0]
+    assert (player.food, player.prod) == (4, 2)
+
+
+def test_road_halves_movement_cost():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    state.tile_at((2, 2)).kind = "plains"
+    state.tile_at((3, 2)).kind = "forest"
+    rng = Random(0)
+    rules.found_city(state, uid, rng)
+    scout_id = next(
+        uid for uid, u in state.units.items() if u.kind == "scout" and u.owner == 0
+    )
+    state.units[scout_id].pos = (3, 2)
+    rules.build_infrastructure(state, scout_id, "road")
+    state.units[scout_id].pos = (2, 2)
+    state.units[scout_id].moves_left = config.UNIT_STATS["scout"]["moves"]
+    rules.move_unit(state, scout_id, (3, 2))
+    assert state.units[scout_id].moves_left == config.UNIT_STATS["scout"]["moves"] - 1
+
+
+def test_city_focus_production():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    state.tile_at((2, 2)).kind = "plains"
+    state.tile_at((3, 2)).kind = "forest"
+    state.tile_at((2, 3)).kind = "hill"
+    rng = Random(0)
+    city = rules.found_city(state, uid, rng)
+    city.claimed.add((2, 3))
+    city.focus = "prod"
+    rules.end_turn(state, rng)
+    player = state.players[0]
+    assert (player.food, player.prod) == (0, 4)

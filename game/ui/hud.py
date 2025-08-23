@@ -49,8 +49,16 @@ class HUD:
             state.expand_direction = "up"
         self.buy_unit.rebuild()
         self.buy_unit.disable()
+        self.focus = pygame_gui.elements.UIDropDownMenu(
+            options_list=["Food", "Production"],
+            starting_option="Food",
+            relative_rect=pygame.Rect(370, 5, 100, 30),
+            container=self.panel,
+            manager=self.manager,
+        )
+        self.focus.disable()
         self.info = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(370, 5, 200, 30),
+            relative_rect=pygame.Rect(480, 5, 150, 30),
             text="",
             container=self.panel,
             manager=self.manager,
@@ -83,6 +91,8 @@ class HUD:
         self.panel.set_relative_position(self.rect.topleft)
         self.panel.set_dimensions((self.rect.width, self.rect.height))
         self.buy_unit.set_relative_position((210, self.rect.y + 5))
+        self.focus.set_relative_position((370, 5))
+        self.info.set_relative_position((480, 5))
         self.hover_info.set_relative_position(
             (self.rect.width - 210, self.rect.height - 30)
         )
@@ -130,22 +140,34 @@ class HUD:
             self.buy_unit.current_state.selected_option = self.buy_unit.selected_option
             self.buy_unit.current_state.rebuild()
 
+    def set_focus_option(self, option: str) -> None:
+        """Set the focus dropdown to ``option``."""
+        self.focus.selected_option = (option, option)
+        if self.focus.current_state is not None:
+            self.focus.current_state.selected_option = self.focus.selected_option
+            self.focus.current_state.rebuild()
+
     def contains_point(self, pos: tuple[int, int]) -> bool:
         """Return True if ``pos`` is over any HUD element.
 
         Includes the expanded buy-unit menu which may overlap the map area.
         """
-        if self.rect.collidepoint(pos) or self.buy_unit.rect.collidepoint(pos):
+        if (
+            self.rect.collidepoint(pos)
+            or self.buy_unit.rect.collidepoint(pos)
+            or self.focus.rect.collidepoint(pos)
+        ):
             return True
-        state = self.buy_unit.current_state
-        if state is not None:
-            selected_button = getattr(state, "selected_option_button", None)
+        for menu in (self.buy_unit.current_state, self.focus.current_state):
+            if menu is None:
+                continue
+            selected_button = getattr(menu, "selected_option_button", None)
             if selected_button and selected_button.rect.collidepoint(pos):
                 return True
-            options_list = getattr(state, "options_selection_list", None)
+            options_list = getattr(menu, "options_selection_list", None)
             if options_list and options_list.rect.collidepoint(pos):
                 return True
-            close_button = getattr(state, "close_button", None)
+            close_button = getattr(menu, "close_button", None)
             if close_button and close_button.rect.collidepoint(pos):
                 return True
         return False
