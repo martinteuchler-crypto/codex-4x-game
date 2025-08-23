@@ -60,14 +60,14 @@ def grow_city(state: State, city: City, rng: Random) -> bool:
     cost = 2**city.size
     if (
         player.food < cost
-        or getattr(city, "_grown_turn", -1) == state.turn
+        or city.last_grow_turn == state.turn
         or not claim_best_tile(state, city, rng)
     ):
         return False
 
     player.food -= cost
     city.size += 1
-    city._grown_turn = state.turn
+    city.last_grow_turn = state.turn
     return True
 
 

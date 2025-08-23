@@ -16,6 +16,7 @@ def make_state() -> State:
         size=1,
         claimed={(2, 2), (2, 3)},
         focus="prod",
+        last_grow_turn=3,
     )
     state = State(5, 5, tiles, units, {city.id: city}, players)
     state.next_unit_id = max(units) + 1

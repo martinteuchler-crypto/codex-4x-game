@@ -180,6 +180,27 @@ def test_city_can_claim_water_tile():
     assert (player.food, player.prod) == (2, 1)
 
 
+def test_city_grows_only_once_per_turn():
+    state = make_state()
+    uid = next(uid for uid, u in state.units.items() if u.kind == "settler")
+    state.units[uid].pos = (2, 2)
+    for dx, dy in [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]:
+        state.tile_at((2 + dx, 2 + dy)).kind = "plains"
+    rng = Random(0)
+    city = rules.found_city(state, uid, rng)
+    player = state.players[0]
+    player.food = 100
+
+    assert rules.grow_city(state, city, rng)
+    assert not rules.grow_city(state, city, rng)
+    size = city.size
+    rules.end_turn(state, rng)
+    assert city.size == size
+    player.food = 100
+    rules.end_turn(state, rng)
+    assert city.size == size + 1
+
+
 def test_build_infrastructure_and_road_yield():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")

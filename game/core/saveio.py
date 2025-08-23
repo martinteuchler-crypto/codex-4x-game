@@ -41,6 +41,7 @@ def state_to_dict(state: State) -> Dict[str, Any]:
                 "size": c.size,
                 "claimed": [list(s) for s in sorted(c.claimed)],
                 "focus": c.focus,
+                "last_grow_turn": c.last_grow_turn,
             }
             for cid, c in state.cities.items()
         },
@@ -84,6 +85,7 @@ def dict_to_state(data: Dict[str, Any]) -> State:
             size=c.get("size", 1),
             claimed={tuple(s) for s in c.get("claimed", [])},
             focus=c.get("focus", "food"),
+            last_grow_turn=c.get("last_grow_turn", -1),
         )
         for cid, c in data["cities"].items()
     }
