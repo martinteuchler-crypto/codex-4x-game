@@ -114,12 +114,7 @@ def end_turn(state: State, rng: Random | None = None) -> None:
         player = state.players[city.owner]
         player.food += total_food
         player.prod += total_prod
-        city.food_stock += total_food
-        while city.food_stock >= 3 and player.food >= 3:
-            city.food_stock -= 3
-            player.food -= 3
-            city.size += 1
-            claim_best_tile(state, city, rng)
+        grow_city(state, city, rng)
 
     state.current_player = 1 - state.current_player
     state.turn += 1

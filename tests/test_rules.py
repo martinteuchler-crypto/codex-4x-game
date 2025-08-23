@@ -123,11 +123,10 @@ def test_city_grows_and_claims_new_tile():
     rng = Random(0)
     city = rules.found_city(state, uid, rng)
     rules.end_turn(state, rng)
-    rules.end_turn(state, rng)
     player = state.players[0]
     assert city.size == 2
     assert city.claimed == {(2, 2), (3, 2), (2, 1)}
-    assert player.food == 1
+    assert player.food == 0
 
 
 def test_city_yield_sums_claimed_tiles():
@@ -156,4 +155,4 @@ def test_city_can_claim_water_tile():
     assert (3, 2) in city.claimed
     rules.end_turn(state, rng)
     player = state.players[0]
-    assert (player.food, player.prod) == (2, 1)
+    assert (player.food, player.prod) == (0, 1)
