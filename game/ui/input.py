@@ -76,7 +76,7 @@ class InputHandler:
                 return
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
             if (
-                event.mod & pygame.KMOD_SHIFT
+                pygame.key.get_mods() & pygame.KMOD_SHIFT
                 and self.selected is not None
                 and self.selected in state.units
             ):
