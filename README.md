@@ -23,6 +23,7 @@ python -m game.main
 - **F**: found city
 - **Enter**: end turn
 - **Q**: quit game
+- **Shift + Left Click**: move entire soldier stack
 
 ### Win/Lose
 

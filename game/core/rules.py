@@ -167,7 +167,10 @@ def buy_unit(state: State, city_id: int, kind: str) -> Unit:
     player = state.players[city.owner]
     if player.food < cost_food or player.prod < cost_prod:
         raise RuleError("not enough resources")
-    if state.units_at(city.pos):
+    units_here = state.units_at(city.pos)
+    if any(u.owner != city.owner for u in units_here):
+        raise RuleError("tile occupied")
+    if kind != "soldier" and units_here:
         raise RuleError("tile occupied")
     player.food -= cost_food
     player.prod -= cost_prod

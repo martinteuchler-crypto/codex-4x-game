@@ -75,6 +75,36 @@ class InputHandler:
                 # Clicking HUD or outside the map should not affect selection.
                 return
             tile = (x // config.TILE_SIZE, y // config.TILE_SIZE)
+            if (
+                event.mod & pygame.KMOD_SHIFT
+                and self.selected is not None
+                and self.selected in state.units
+            ):
+                src = state.units[self.selected].pos
+                stack = [
+                    u
+                    for u in state.units.values()
+                    if (
+                        u.pos == src
+                        and u.owner == state.current_player
+                        and u.kind == "soldier"
+                    )
+                ]
+                dx = abs(tile[0] - src[0])
+                dy = abs(tile[1] - src[1])
+                cost = config.MOVE_COST[state.tile_at(tile).kind]
+                if max(dx, dy) != 1 or any(u.moves_left < cost for u in stack):
+                    self.hud.show_message("Cannot move stack")
+                else:
+                    for u in list(stack):
+                        try:
+                            rules.move_unit(state, u.id, tile)
+                        except rules.RuleError as e:
+                            self.hud.show_message(str(e))
+                            break
+                    else:
+                        self.hud.hide_message()
+                return
             self.selected = None
             self.selected_city = None
             self.hud.buy_unit.disable()
