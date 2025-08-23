@@ -54,7 +54,13 @@ class InputHandler:
             else:
                 city = state.city_at(coord)
                 if city is not None:
-                    text = f"City (Player {city.owner})"
+                    total_food = 0
+                    total_prod = 0
+                    for c in city.claimed:
+                        food, prod = config.YIELD[state.tile_at(c).kind]
+                        total_food += food
+                        total_prod += prod
+                    text = f"City (Player {city.owner}) F:{total_food} P:{total_prod}"
                 else:
                     tile = state.tile_at(coord)
                     food, prod = config.YIELD[tile.kind]

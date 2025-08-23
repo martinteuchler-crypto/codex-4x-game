@@ -40,12 +40,16 @@ def grow_city(state: State, city: City, rng: Random) -> bool:
 
     player = state.players[city.owner]
     cost = 2**city.size
-    if player.food < cost:
+    if (
+        player.food < cost
+        or getattr(city, "_grown_turn", -1) == state.turn
+        or not claim_best_tile(state, city, rng)
+    ):
         return False
 
     player.food -= cost
     city.size += 1
-    claim_best_tile(state, city, rng)
+    city._grown_turn = state.turn
     return True
 
 
@@ -76,16 +80,17 @@ def move_unit(state: State, unit_id: int, dest: Coord) -> None:
         city.owner = unit.owner
 
 
-def claim_best_tile(state: State, city: City, rng: Random) -> None:
+def claim_best_tile(state: State, city: City, rng: Random) -> bool:
     claimed_tiles = {coord for c in state.cities.values() for coord in c.claimed}
     unclaimed = [
         (x, y)
         for x in range(state.width)
         for y in range(state.height)
         if (x, y) not in claimed_tiles
+        and city.owner in state.tile_at((x, y)).revealed_by
     ]
     if not unclaimed:
-        return
+        return False
 
     min_dist = min(distance(city.pos, c) for c in unclaimed)
     nearest = [c for c in unclaimed if distance(city.pos, c) == min_dist]
@@ -98,15 +103,17 @@ def claim_best_tile(state: State, city: City, rng: Random) -> None:
     max_neigh = max(neighbour_count(c) for c in nearest)
     candidates = [c for c in nearest if neighbour_count(c) == max_neigh]
     city.claimed.add(rng.choice(sorted(candidates)))
+    return True
 
 
 def end_turn(state: State, rng: Random | None = None) -> None:
     rng = rng or Random()
     for city in state.cities.values():
-        total_food = 0
-        total_prod = 0
         if not city.claimed:
             city.claimed.add(city.pos)
+        grow_city(state, city, rng)
+        total_food = 0
+        total_prod = 0
         for coord in city.claimed:
             food, prod = config.YIELD[state.tile_at(coord).kind]
             total_food += food
@@ -114,7 +121,6 @@ def end_turn(state: State, rng: Random | None = None) -> None:
         player = state.players[city.owner]
         player.food += total_food
         player.prod += total_prod
-        grow_city(state, city, rng)
 
     state.current_player = 1 - state.current_player
     state.turn += 1
@@ -134,6 +140,7 @@ def found_city(state: State, unit_id: int, rng: Random | None = None) -> City:
     if state.city_at(unit.pos):
         raise RuleError("city exists")
     rng = rng or Random()
+    reveal(state, unit)
     city = City(
         id=state.next_city_id,
         owner=unit.owner,
