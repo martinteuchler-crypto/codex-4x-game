@@ -65,13 +65,13 @@ This document tells a code-generating agent exactly what to build and how to str
 
 ### Core Concepts
 
-* **Map:** Rect grid (20×12 default). Tiles: `plains`, `forest`, `hill`, `water`. Each has move cost and yield.
+* **Map:** Rect grid (20×12 default). Tiles: `plains`, `forest`, `hill`, `water`. Each has move cost and yield; water also provides food.
 * **Fog of War:** Tiles start hidden; units reveal in radius 3.
-* **Units:** `Scout` (fast, weak), `Soldier` (slow, fights), both 1 HP for MVP. Movement points per turn.
-* **Cities:** Founded on revealed land; produce **food** and **production** each turn.
-* **Resources & Economy:** Each city yields `food=1..3`, `prod=1..2` depending on adjacent tiles; global per player. Production buys new units at city locations.
+* **Units:** `Scout` (fast, weak), `Soldier` (slow, fights), `Settler` (founds cities). All 1 HP with movement points per turn.
+* **Cities:** Founded on revealed land; produce **food** and **production** each turn. Cities spend food to grow and claim nearby tiles.
+* **Resources & Economy:** Claimed tiles yield resources modified by infrastructure. Units can build `farm`, `mine`, `saw`, and `road`; roads also reduce move costs.
 * **Turns:** Players alternate; AI is Player 2.
-* **Combat:** If a unit enters an enemy unit’s tile, the attacker wins (MVP rule) and defender is removed. City capture if attacked with Soldier.
+* **Combat:** If a unit enters an enemy unit’s tile, the attacker wins and the defender is removed. Cities change ownership if attacked with a Soldier.
 
 ### Win/Lose
 
@@ -79,7 +79,7 @@ This document tells a code-generating agent exactly what to build and how to str
 
 ### UX
 
-* Left-click to select; right-click to move. Buttons: End Turn, Found City, Buy Unit (Soldier/Scout) if at city and enough production. Hotkeys: **W/A/S/D** to move, **F** to found city, **Enter** to end turn, **Q** to quit. The End Turn button is always available.
+* Left-click to select; right-click to move. Buttons: End Turn, Found City, Buy Unit (Soldier/Scout/Settler) if at city and enough production. Hotkeys: **W/A/S/D** to move, **F** to found city, **1-4** to build farm/mine/saw/road, **Enter** to end turn, **Q** to quit, **Shift + Left Click** to move a soldier stack. The End Turn button is always available.
 * HUD shows: current player, turn number, resources, selected unit info.
 
 ---
@@ -87,9 +87,8 @@ This document tells a code-generating agent exactly what to build and how to str
 ## 4) Data Model (in `models.py`)
 
 ```python
-from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import List, Tuple, Dict, Optional
+from typing import Dict, List, Optional, Set, Tuple
 
 Coord = Tuple[int, int]
 
@@ -97,14 +96,15 @@ Coord = Tuple[int, int]
 class Tile:
     x: int
     y: int
-    kind: str              # 'plains' | 'forest' | 'hill' | 'water'
-    revealed_by: set[int] = field(default_factory=set)
+    kind: str  # 'plains' | 'forest' | 'hill' | 'water'
+    revealed_by: Set[int] = field(default_factory=set)
+    improvements: Set[str] = field(default_factory=set)
 
 @dataclass
 class Unit:
     id: int
-    owner: int             # 0 human, 1 ai
-    kind: str              # 'scout' | 'soldier'
+    owner: int  # 0 human, 1 ai
+    kind: str  # 'scout' | 'soldier' | 'settler'
     pos: Coord
     moves_left: int
 
@@ -113,14 +113,15 @@ class City:
     id: int
     owner: int
     pos: Coord
+    size: int = 1
+    claimed: Set[Coord] = field(default_factory=set)
+    focus: str = "food"
 
 @dataclass
 class Player:
     id: int
-    production: int = 0
     food: int = 0
-    units: List[int] = field(default_factory=list)
-    cities: List[int] = field(default_factory=list)
+    prod: int = 0
 
 @dataclass
 class State:
@@ -130,8 +131,8 @@ class State:
     units: Dict[int, Unit]
     cities: Dict[int, City]
     players: Dict[int, Player]
-    current_player: int
-    turn: int
+    current_player: int = 0
+    turn: int = 1
     next_unit_id: int = 1
     next_city_id: int = 1
 ```
@@ -140,16 +141,18 @@ class State:
 
 ## 5) Actions & Rules (in `rules.py`)
 
-* Public API (pure functions that return **new** `State` and/or `events`):
+* Public API (functions mutate `State` and raise `RuleError` on invalid actions):
 
-  * `start_game(seed:int, w:int, h:int) -> State`
-  * `end_turn(state: State) -> State`
-  * `select_unit(state, unit_id)` (UI-level only)
-  * `move_unit(state, unit_id, to: Coord) -> State`
-  * `found_city(state, unit_id) -> State`
-  * `buy_unit(state, city_id, kind: str) -> State`
+  * `move_unit(state, unit_id, dest)`
+  * `build_infrastructure(state, unit_id, kind)`
+  * `found_city(state, unit_id, rng=None) -> City`
+  * `buy_unit(state, city_id, kind) -> Unit`
+  * `end_turn(state, rng=None)`
+  * `grow_city(state, city, rng) -> bool`
+  * `tile_yield(state, coord) -> tuple[int, int]`
+  * `check_win(state) -> int | None`
 * **Validation**: Actions raise `RuleError` with strings safe to show in UI.
-* **RNG**: All randomness uses a `Random` created from `state.turn` + `seed` stored in `State`.
+* **RNG**: Functions accept an optional `Random` for determinism.
 
 ---
 
@@ -209,14 +212,19 @@ class State:
 ## 12) Configuration (`config.py`)
 
 ```python
-TILE_SIZE = 32
+TILE_SIZE: int = 32
 UI_BAR_H = 64
-MOVE_COST = {"plains":1, "forest":2, "hill":2, "water":999}
-YIELD = {"plains": (1,1), "forest": (0,2), "hill": (0,2), "water": (0,0)}  # (food, prod)
+MOVE_COST = {"plains": 1, "forest": 2, "hill": 2, "water": 999}
+YIELD = {
+    "plains": (1, 1),
+    "forest": (0, 2),
+    "hill": (0, 2),
+    "water": (1, 0),
+}  # (food, prod)
 UNIT_STATS = {
-    "scout": {"moves":3, "food":0, "prod":3},
-    "soldier": {"moves":2, "food":0, "prod":4},
-    "settler": {"moves":2, "food":2, "prod":1},
+    "scout": {"moves": 3, "food": 0, "prod": 3},
+    "soldier": {"moves": 2, "food": 0, "prod": 4},
+    "settler": {"moves": 2, "food": 2, "prod": 1},
 }
 REVEAL_RADIUS = 3
 START_SIZE = (20, 12)
