@@ -1,4 +1,14 @@
-TILE_SIZE = 32
+"""Global configuration values.
+
+This module intentionally keeps only simple data and utility helpers so other
+parts of the game can remain pure and easily testable.  ``TILE_SIZE`` used to be
+treated as a fixed constant, but the UI now allows the window to be resized and
+the map needs to scale accordingly.  To support dynamic scaling, helper
+functions below expose a small API for updating ``TILE_SIZE`` in a controlled
+way.
+"""
+
+TILE_SIZE: int = 32
 UI_BAR_H = 64
 MOVE_COST = {"plains": 1, "forest": 2, "hill": 2, "water": 999}
 YIELD = {
@@ -25,3 +35,26 @@ def clamp_window_size(size: tuple[int, int]) -> tuple[int, int]:
     width = max(MIN_WINDOW[0], min(size[0], MAX_WINDOW[0]))
     height = max(MIN_WINDOW[1], min(size[1], MAX_WINDOW[1]))
     return width, height
+
+
+def compute_tile_size(window: tuple[int, int], map_size: tuple[int, int]) -> int:
+    """Return a tile size that fits ``map_size`` within ``window``.
+
+    The HUD occupies ``UI_BAR_H`` pixels at the bottom of the screen, so only
+    the remaining vertical space is available for the map.  The tile size is the
+    largest integer that allows the entire map to be displayed without cropping.
+    """
+
+    width, height = window
+    map_w, map_h = map_size
+    available_h = max(1, height - UI_BAR_H)
+    size_w = width // map_w
+    size_h = available_h // map_h
+    return max(1, min(size_w, size_h))
+
+
+def set_tile_size(size: int) -> None:
+    """Update ``TILE_SIZE`` to ``size`` ensuring it stays positive."""
+
+    global TILE_SIZE
+    TILE_SIZE = max(1, int(size))

@@ -20,6 +20,14 @@ class Gameplay:
         self.state = state
         self.screen = pygame.display.get_surface()
         size = self.screen.get_size()
+        tile = config.compute_tile_size(size, (state.width, state.height))
+        config.set_tile_size(tile)
+        size = (
+            tile * state.width,
+            tile * state.height + config.UI_BAR_H,
+        )
+        pygame.display.set_mode(size, pygame.RESIZABLE)
+        self.screen = pygame.display.get_surface()
         hud_rect = pygame.Rect(0, size[1] - config.UI_BAR_H, size[0], config.UI_BAR_H)
         self.hud = HUD(hud_rect)
         self.input = InputHandler(self.hud)
@@ -34,7 +42,15 @@ class Gameplay:
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.VIDEORESIZE:
-                    new_size = config.clamp_window_size((event.w, event.h))
+                    requested = config.clamp_window_size((event.w, event.h))
+                    tile = config.compute_tile_size(
+                        requested, (self.state.width, self.state.height)
+                    )
+                    config.set_tile_size(tile)
+                    new_size = (
+                        tile * self.state.width,
+                        tile * self.state.height + config.UI_BAR_H,
+                    )
                     pygame.display.set_mode(new_size, pygame.RESIZABLE)
                     self.screen = pygame.display.get_surface()
                     self.hud.resize(new_size)
