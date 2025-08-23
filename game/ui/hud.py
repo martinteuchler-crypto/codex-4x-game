@@ -5,6 +5,7 @@ from __future__ import annotations
 import pygame
 import pygame_gui
 
+from .. import config
 from ..core.models import State
 
 
@@ -63,6 +64,23 @@ class HUD:
             container=self.panel,
             manager=self.manager,
         )
+        self.build_panel = pygame_gui.elements.UIPanel(
+            relative_rect=pygame.Rect(10, 35, 220, 25),
+            container=self.panel,
+            manager=self.manager,
+        )
+        self.build_buttons = {
+            name: pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(i * 55, 0, 55, 25),
+                text=label,
+                container=self.build_panel,
+                manager=self.manager,
+            )
+            for i, (name, label) in enumerate(
+                [("farm", "Farm"), ("mine", "Mine"), ("saw", "Saw"), ("road", "Road")]
+            )
+        }
+        self.build_panel.hide()
         self.hover_info = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect(
                 self.rect.width - 210, self.rect.height - 30, 200, 20
@@ -93,6 +111,7 @@ class HUD:
         self.buy_unit.set_relative_position((210, self.rect.y + 5))
         self.focus.set_relative_position((370, 5))
         self.info.set_relative_position((480, 5))
+        self.build_panel.set_relative_position((10, 35))
         self.hover_info.set_relative_position(
             (self.rect.width - 210, self.rect.height - 30)
         )
@@ -146,6 +165,26 @@ class HUD:
         if self.focus.current_state is not None:
             self.focus.current_state.selected_option = self.focus.selected_option
             self.focus.current_state.rebuild()
+
+    def show_build_options(self, state: State, coord: tuple[int, int]) -> None:
+        tile = state.tile_at(coord)
+        player = state.players[state.current_player]
+        for kind, button in self.build_buttons.items():
+            info = config.INFRASTRUCTURE[kind]
+            allowed = (
+                tile.kind in info["required"]
+                and (kind == "road" or not tile.improvements & {"farm", "mine", "saw"})
+                and kind not in tile.improvements
+                and player.prod >= info["cost"]
+            )
+            if allowed:
+                button.enable()
+            else:
+                button.disable()
+        self.build_panel.show()
+
+    def hide_build_options(self) -> None:
+        self.build_panel.hide()
 
     def contains_point(self, pos: tuple[int, int]) -> bool:
         """Return True if ``pos`` is over any HUD element.

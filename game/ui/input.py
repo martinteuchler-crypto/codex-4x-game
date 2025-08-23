@@ -18,10 +18,12 @@ class InputHandler:
         self.hud = hud
         self.selected: int | None = None
         self.selected_city: int | None = None
+        self.selected_tile: tuple[int, int] | None = None
         self.hud.found_city.disable()
         self.hud.buy_unit.disable()
         self.hud.focus.disable()
         self.hud.hide_message()
+        self.hud.hide_build_options()
 
     def handle_event(
         self, event: pygame.event.Event, state: State, rng: Random
@@ -107,6 +109,7 @@ class InputHandler:
                     else:
                         self.hud.hide_message()
                 return
+            self.selected_tile = tile
             self.selected = None
             self.selected_city = None
             self.hud.buy_unit.disable()
@@ -133,6 +136,14 @@ class InputHandler:
                     )
                 else:
                     self.hud.focus.disable()
+            claimed = any(
+                tile in city.claimed and city.owner == state.current_player
+                for city in state.cities.values()
+            )
+            if claimed:
+                self.hud.show_build_options(state, tile)
+            else:
+                self.hud.hide_build_options()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
             x, y = event.pos
             map_rect = pygame.Rect(
@@ -157,6 +168,8 @@ class InputHandler:
                 if self.selected_city is None:
                     self.hud.buy_unit.disable()
                     self.hud.show_message("No unit selected")
+            self.selected_tile = None
+            self.hud.hide_build_options()
         elif event.type == pygame.KEYDOWN:
             if (
                 self.selected is not None
@@ -178,11 +191,12 @@ class InputHandler:
                     self.hud.show_message(str(e))
                 except KeyError:
                     self.hud.show_message("Cannot move there")
-            elif (
-                self.selected is not None
-                and self.selected in state.units
-                and event.key in {pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4}
-            ):
+            elif self.selected_tile is not None and event.key in {
+                pygame.K_1,
+                pygame.K_2,
+                pygame.K_3,
+                pygame.K_4,
+            }:
                 kind = {
                     pygame.K_1: "farm",
                     pygame.K_2: "mine",
@@ -190,7 +204,8 @@ class InputHandler:
                     pygame.K_4: "road",
                 }[event.key]
                 try:
-                    rules.build_infrastructure(state, self.selected, kind)
+                    rules.build_infrastructure(state, self.selected_tile, kind)
+                    self.hud.show_build_options(state, self.selected_tile)
                     self.hud.hide_message()
                 except rules.RuleError as e:
                     self.hud.show_message(str(e))
@@ -226,6 +241,8 @@ class InputHandler:
                 self.hud.found_city.disable()
                 self.hud.buy_unit.disable()
                 self.hud.hide_message()
+                self.selected_tile = None
+                self.hud.hide_build_options()
         elif event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.hud.end_turn:
@@ -235,6 +252,8 @@ class InputHandler:
                     self.hud.found_city.disable()
                     self.hud.buy_unit.disable()
                     self.hud.hide_message()
+                    self.selected_tile = None
+                    self.hud.hide_build_options()
                 elif (
                     event.ui_element == self.hud.found_city
                     and self.selected is not None
@@ -261,6 +280,21 @@ class InputHandler:
                         self.hud.found_city.disable()
                         self.hud.buy_unit.disable()
                         self.hud.focus.disable()
+                elif (
+                    self.selected_tile is not None
+                    and event.ui_element in self.hud.build_buttons.values()
+                ):
+                    kind = next(
+                        k
+                        for k, b in self.hud.build_buttons.items()
+                        if b == event.ui_element
+                    )
+                    try:
+                        rules.build_infrastructure(state, self.selected_tile, kind)
+                        self.hud.show_build_options(state, self.selected_tile)
+                        self.hud.hide_message()
+                    except rules.RuleError as e:
+                        self.hud.show_message(str(e))
             elif (
                 event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED
                 and event.ui_element == self.hud.buy_unit

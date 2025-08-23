@@ -209,14 +209,11 @@ def test_build_infrastructure_and_road_yield():
     state.tile_at((3, 2)).kind = "plains"
     rng = Random(0)
     rules.found_city(state, uid, rng)
-    scout_id = next(
-        uid for uid, u in state.units.items() if u.kind == "scout" and u.owner == 0
-    )
-    state.units[scout_id].pos = (2, 2)
-    rules.build_infrastructure(state, scout_id, "farm")
-    rules.build_infrastructure(state, scout_id, "road")
-    rules.end_turn(state, rng)
     player = state.players[0]
+    player.prod = 4
+    rules.build_infrastructure(state, (2, 2), "farm")
+    rules.build_infrastructure(state, (2, 2), "road")
+    rules.end_turn(state, rng)
     assert (player.food, player.prod) == (4, 2)
 
 
@@ -228,11 +225,12 @@ def test_road_halves_movement_cost():
     state.tile_at((3, 2)).kind = "forest"
     rng = Random(0)
     rules.found_city(state, uid, rng)
+    player = state.players[0]
+    player.prod = 2
+    rules.build_infrastructure(state, (3, 2), "road")
     scout_id = next(
         uid for uid, u in state.units.items() if u.kind == "scout" and u.owner == 0
     )
-    state.units[scout_id].pos = (3, 2)
-    rules.build_infrastructure(state, scout_id, "road")
     state.units[scout_id].pos = (2, 2)
     state.units[scout_id].moves_left = config.UNIT_STATS["scout"]["moves"]
     rules.move_unit(state, scout_id, (3, 2))
