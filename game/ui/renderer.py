@@ -20,6 +20,12 @@ COLORS = {
 }
 
 HIGHLIGHT_COLOR = (255, 255, 0)
+INFRA_COLORS = {
+    "farm": (144, 238, 144),
+    "mine": (169, 169, 169),
+    "saw": (160, 82, 45),
+    "road": (105, 105, 105),
+}
 FONT: pygame.font.Font | None = None
 
 
@@ -37,7 +43,22 @@ def draw(
         rect = pygame.Rect(tile.x * ts, tile.y * ts, ts, ts)
         color = COLORS[tile.kind]
         surface.fill(color, rect)
-        if state.current_player not in tile.revealed_by:
+        if state.current_player in tile.revealed_by:
+            if "road" in tile.improvements:
+                pygame.draw.line(
+                    surface, INFRA_COLORS["road"], rect.midleft, rect.midright, 2
+                )
+                pygame.draw.line(
+                    surface, INFRA_COLORS["road"], rect.midtop, rect.midbottom, 2
+                )
+            for imp in tile.improvements:
+                if imp == "road":
+                    continue
+                inner = pygame.Rect(
+                    rect.x + ts // 4, rect.y + ts // 4, ts // 2, ts // 2
+                )
+                surface.fill(INFRA_COLORS[imp], inner)
+        else:
             surface.fill(COLORS["fog"], rect)
     for city in state.cities.values():
         rect = pygame.Rect(city.pos[0] * ts, city.pos[1] * ts, ts, ts)

@@ -22,6 +22,32 @@ UNIT_STATS = {
     "soldier": {"moves": 2, "food": 0, "prod": 4},
     "settler": {"moves": 2, "food": 2, "prod": 1},
 }
+INFRASTRUCTURE = {
+    "farm": {
+        "cost": 2,
+        "yield": (1, 0),
+        "required": {"plains"},
+        "road_bonus": (1, 0),
+    },
+    "mine": {
+        "cost": 2,
+        "yield": (0, 1),
+        "required": {"hill"},
+        "road_bonus": (0, 1),
+    },
+    "saw": {
+        "cost": 2,
+        "yield": (0, 1),
+        "required": {"forest"},
+        "road_bonus": (0, 1),
+    },
+    "road": {
+        "cost": 2,
+        "yield": (0, 0),
+        "required": {"plains", "forest", "hill"},
+        "road_bonus": (0, 0),
+    },
+}
 REVEAL_RADIUS = 3
 START_SIZE = (20, 12)
 
