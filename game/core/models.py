@@ -34,6 +34,7 @@ class City:
     size: int = 1
     claimed: Set[Coord] = field(default_factory=set)
     focus: str = "food"
+    last_grow_turn: int = -1
 
     def claim(self, coord: Coord) -> None:
         """Add a coordinate to the city's claimed tiles."""
