@@ -50,10 +50,9 @@ class HUD:
             state.expand_direction = "up"
         self.buy_unit.rebuild()
         self.buy_unit.disable()
-        self.focus = pygame_gui.elements.UIDropDownMenu(
-            options_list=["Food", "Production"],
-            starting_option="Food",
+        self.focus = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(370, 5, 100, 30),
+            text="Food",
             container=self.panel,
             manager=self.manager,
         )
@@ -160,11 +159,8 @@ class HUD:
             self.buy_unit.current_state.rebuild()
 
     def set_focus_option(self, option: str) -> None:
-        """Set the focus dropdown to ``option``."""
-        self.focus.selected_option = (option, option)
-        if self.focus.current_state is not None:
-            self.focus.current_state.selected_option = self.focus.selected_option
-            self.focus.current_state.rebuild()
+        """Set the focus button text to ``option``."""
+        self.focus.set_text(option)
 
     def show_build_options(self, state: State, coord: tuple[int, int]) -> None:
         tile = state.tile_at(coord)
@@ -191,13 +187,9 @@ class HUD:
 
         Includes the expanded buy-unit menu which may overlap the map area.
         """
-        if (
-            self.rect.collidepoint(pos)
-            or self.buy_unit.rect.collidepoint(pos)
-            or self.focus.rect.collidepoint(pos)
-        ):
+        if self.rect.collidepoint(pos) or self.buy_unit.rect.collidepoint(pos):
             return True
-        for menu in (self.buy_unit.current_state, self.focus.current_state):
+        for menu in (self.buy_unit.current_state,):
             if menu is None:
                 continue
             selected_button = getattr(menu, "selected_option_button", None)
