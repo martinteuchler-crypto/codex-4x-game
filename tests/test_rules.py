@@ -65,6 +65,24 @@ def test_can_stack_soldiers_on_city_tile():
     assert len(soldiers) == 2 and soldiers[0].pos == soldiers[1].pos
 
 
+def test_cannot_found_too_close_to_another_city():
+    state = make_state()
+    rng = Random(0)
+    uid0 = next(
+        uid for uid, u in state.units.items() if u.kind == "settler" and u.owner == 0
+    )
+    state.units[uid0].pos = (2, 2)
+    state.tile_at((2, 2)).kind = "plains"
+    rules.found_city(state, uid0, rng)
+    uid1 = next(
+        uid for uid, u in state.units.items() if u.kind == "settler" and u.owner == 1
+    )
+    state.units[uid1].pos = (4, 2)
+    state.tile_at((4, 2)).kind = "plains"
+    with pytest.raises(rules.RuleError):
+        rules.found_city(state, uid1, rng)
+
+
 def test_buy_settler_costs_food_and_production():
     state = make_state()
     uid = next(uid for uid, u in state.units.items() if u.kind == "settler")

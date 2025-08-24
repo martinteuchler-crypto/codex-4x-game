@@ -194,6 +194,9 @@ def found_city(state: State, unit_id: int, rng: Random | None = None) -> City:
         raise RuleError("cannot found on water")
     if state.city_at(unit.pos):
         raise RuleError("city exists")
+    for other in state.cities.values():
+        if distance(unit.pos, other.pos) <= 2:
+            raise RuleError("too close to another city")
     rng = rng or Random()
     reveal(state, unit)
     city = City(
