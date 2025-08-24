@@ -35,6 +35,7 @@ you control a city or a settler, the game continues.
 Cities spend food to grow and automatically claim nearby tiles. Building
 farms, mines, sawmills, and roads on claimed tiles boosts yields and can reduce
 movement costs.
+Production cannot be stockpiled; unused production is lost at the end of each turn.
 
 ## Tests
 ```bash

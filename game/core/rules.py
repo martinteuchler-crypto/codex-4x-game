@@ -155,6 +155,8 @@ def claim_best_tile(state: State, city: City, rng: Random) -> bool:
 
 def end_turn(state: State, rng: Random | None = None) -> None:
     rng = rng or Random()
+    # discard unused production from the player whose turn just ended
+    state.players[state.current_player].prod = 0
     for city in state.cities.values():
         if not city.claimed:
             city.claimed.add(city.pos)
