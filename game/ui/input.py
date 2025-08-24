@@ -61,13 +61,13 @@ class InputHandler:
                     total_food = 0
                     total_prod = 0
                     for c in city.claimed:
-                        food, prod = config.YIELD[state.tile_at(c).kind]
+                        food, prod = rules.tile_yield(state, c)
                         total_food += food
                         total_prod += prod
                     text = f"City (Player {city.owner}) F:{total_food} P:{total_prod}"
                 else:
                     tile = state.tile_at(coord)
-                    food, prod = config.YIELD[tile.kind]
+                    food, prod = rules.tile_yield(state, coord)
                     text = f"{tile.kind} F:{food} P:{prod}"
             self.hud.set_hover_info(text)
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:

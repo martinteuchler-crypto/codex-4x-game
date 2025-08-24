@@ -18,8 +18,8 @@ COLORS = {
     "soldier": (255, 0, 0),
     "settler": (0, 255, 255),
 }
-
-HIGHLIGHT_COLOR = (255, 255, 0)
+CLAIM_COLOR = (255, 255, 0)
+SELECT_COLOR = (255, 0, 255)
 INFRA_COLORS = {
     "farm": (144, 238, 144),
     "mine": (169, 169, 169),
@@ -34,6 +34,7 @@ def draw(
     surface: pygame.Surface,
     selected_unit_id: int | None = None,
     selected_city_id: int | None = None,
+    selected_tile: tuple[int, int] | None = None,
 ) -> None:
     global FONT
     if FONT is None:
@@ -79,15 +80,21 @@ def draw(
             text = FONT.render(f"#{count}", True, (0, 0, 0))
             text_rect = text.get_rect(center=rect.center)
             surface.blit(text, text_rect)
-    if selected_city_id is not None and selected_city_id in state.cities:
-        city = state.cities[selected_city_id]
+    for city in state.cities.values():
         claimed = getattr(city, "claimed", {city.pos})
         for coord in claimed:
-            rect = pygame.Rect(coord[0] * ts, coord[1] * ts, ts, ts)
-            pygame.draw.rect(surface, HIGHLIGHT_COLOR, rect, 2)
+            tile = state.tile_at(coord)
+            if state.current_player in tile.revealed_by:
+                rect = pygame.Rect(coord[0] * ts, coord[1] * ts, ts, ts)
+                pygame.draw.rect(surface, CLAIM_COLOR, rect, 2)
+    if selected_tile is not None:
+        rect = pygame.Rect(selected_tile[0] * ts, selected_tile[1] * ts, ts, ts)
+        pygame.draw.rect(surface, SELECT_COLOR, rect, 3)
     if selected_unit_id is not None and selected_unit_id in state.units:
         unit = state.units[selected_unit_id]
-        tile = state.tile_at(unit.pos)
-        if state.current_player in tile.revealed_by:
-            rect = pygame.Rect(unit.pos[0] * ts, unit.pos[1] * ts, ts, ts)
-            pygame.draw.rect(surface, HIGHLIGHT_COLOR, rect, 2)
+        rect = pygame.Rect(unit.pos[0] * ts, unit.pos[1] * ts, ts, ts)
+        pygame.draw.rect(surface, SELECT_COLOR, rect, 3)
+    if selected_city_id is not None and selected_city_id in state.cities:
+        city = state.cities[selected_city_id]
+        rect = pygame.Rect(city.pos[0] * ts, city.pos[1] * ts, ts, ts)
+        pygame.draw.rect(surface, SELECT_COLOR, rect, 3)

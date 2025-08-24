@@ -66,6 +66,7 @@ class Gameplay:
                 self.screen,
                 self.input.selected,
                 self.input.selected_city,
+                self.input.selected_tile,
             )
             self.hud.draw(self.screen)
             pygame.display.flip()
