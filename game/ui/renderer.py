@@ -27,6 +27,7 @@ INFRA_COLORS = {
     "road": (105, 105, 105),
 }
 FONT: pygame.font.Font | None = None
+FONT_SIZE = 0
 
 
 def draw(
@@ -36,10 +37,13 @@ def draw(
     selected_city_id: int | None = None,
     selected_tile: tuple[int, int] | None = None,
 ) -> None:
-    global FONT
-    if FONT is None:
-        FONT = pygame.font.Font(None, 16)
+    global FONT, FONT_SIZE
     ts = config.TILE_SIZE
+    font_px = max(12, ts // 2)
+    if FONT is None or FONT_SIZE != font_px:
+        FONT = pygame.font.Font(None, font_px)
+        FONT_SIZE = font_px
+    move_points: dict[tuple[int, int], tuple[int, int]] = {}
     for tile in state.tiles:
         rect = pygame.Rect(tile.x * ts, tile.y * ts, ts, ts)
         color = COLORS[tile.kind]
@@ -72,6 +76,10 @@ def draw(
     for unit in state.units.values():
         rect = pygame.Rect(unit.pos[0] * ts + 8, unit.pos[1] * ts + 8, ts - 16, ts - 16)
         surface.fill(COLORS[unit.kind], rect)
+        if unit.moves_left > 0:
+            max_moves = config.UNIT_STATS[unit.kind]["moves"]
+            prev = move_points.get(unit.pos, (0, max_moves))
+            move_points[unit.pos] = (max(unit.moves_left, prev[0]), max_moves)
         if unit.kind == "soldier":
             soldier_counts[unit.pos] = soldier_counts.get(unit.pos, 0) + 1
     for coord, count in soldier_counts.items():
@@ -80,6 +88,16 @@ def draw(
             text = FONT.render(f"#{count}", True, (0, 0, 0))
             text_rect = text.get_rect(center=rect.center)
             surface.blit(text, text_rect)
+    for coord, (moves, max_moves) in move_points.items():
+        seg_w = max(1, ts // max_moves)
+        for i in range(moves):
+            seg_rect = pygame.Rect(
+                coord[0] * ts + i * seg_w,
+                coord[1] * ts,
+                seg_w - 1,
+                4,
+            )
+            pygame.draw.rect(surface, (0, 255, 0), seg_rect)
     for city in state.cities.values():
         claimed = getattr(city, "claimed", {city.pos})
         for coord in claimed:

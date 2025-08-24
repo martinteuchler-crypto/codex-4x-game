@@ -57,8 +57,10 @@ class HUD:
             manager=self.manager,
         )
         self.focus.disable()
+        # Display game/turn info. Width is generous to fit 3-digit resources.
+        info_rect = pygame.Rect(self.rect.width - 310, 5, 300, 30)
         self.info = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect(480, 5, 150, 30),
+            relative_rect=info_rect,
             text="",
             container=self.panel,
             manager=self.manager,
@@ -109,7 +111,8 @@ class HUD:
         self.panel.set_dimensions((self.rect.width, self.rect.height))
         self.buy_unit.set_relative_position((210, self.rect.y + 5))
         self.focus.set_relative_position((370, 5))
-        self.info.set_relative_position((480, 5))
+        self.info.set_relative_position((self.rect.width - 310, 5))
+        self.info.set_dimensions((300, 30))
         self.build_panel.set_relative_position((10, 35))
         self.hover_info.set_relative_position(
             (self.rect.width - 210, self.rect.height - 30)
