@@ -52,7 +52,9 @@ REVEAL_RADIUS = 3
 START_SIZE = (20, 12)
 
 # Window size limits
-MIN_WINDOW = (640, 480)
+# The game targets a minimum resolution of 1280x960 so that HUD elements have
+# adequate space for larger numbers and labels.
+MIN_WINDOW = (1280, 960)
 MAX_WINDOW = (1920, 1280)
 
 
