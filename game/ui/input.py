@@ -295,6 +295,15 @@ class InputHandler:
                         self.hud.hide_message()
                     except rules.RuleError as e:
                         self.hud.show_message(str(e))
+                elif (
+                    event.ui_element == self.hud.focus
+                    and self.selected_city is not None
+                ):
+                    city = state.cities[self.selected_city]
+                    city.focus = "prod" if city.focus == "food" else "food"
+                    self.hud.set_focus_option(
+                        "Food" if city.focus == "food" else "Production"
+                    )
             elif (
                 event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED
                 and event.ui_element == self.hud.buy_unit
@@ -309,13 +318,3 @@ class InputHandler:
                     except KeyError:
                         self.hud.show_message("Cannot buy unit")
                 self.hud.reset_buy_unit()
-            elif (
-                event.user_type == pygame_gui.UI_BUTTON_PRESSED
-                and event.ui_element == self.hud.focus
-                and self.selected_city is not None
-            ):
-                city = state.cities[self.selected_city]
-                city.focus = "prod" if city.focus == "food" else "food"
-                self.hud.set_focus_option(
-                    "Food" if city.focus == "food" else "Production"
-                )
